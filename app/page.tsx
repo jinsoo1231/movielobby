@@ -107,7 +107,7 @@ export default async function Home({
             const rank = (currentPage - 1) * 20 + index + 1;
 
             return (
-              <Link href={`/movie/${movie.id}`} key={movie.id}>
+              <Link href={`/movie/${movie.id}?year=${selectedYear}&page=${currentPage}`} key={movie.id}>
                 <div className="movie-card glass">
                   <img src={posterUrl} alt={movie.title} className="poster" />
                   
