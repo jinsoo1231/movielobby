@@ -3,7 +3,7 @@
 import { useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { Play, ArrowLeft, Star, Clock, Calendar, MessageSquare, X } from "lucide-react";
+import { Play, ArrowLeft, Star, Clock, Calendar, MessageSquare, X, Youtube } from "lucide-react";
 
 // Mock Data
 const MOVIE_DETAILS = {
