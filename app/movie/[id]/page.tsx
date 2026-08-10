@@ -66,14 +66,23 @@ async function getMovieDetail(id: string) {
   }
 }
 
-export default async function MovieDetail({ params }: { params: { id: string } }) {
+export default async function MovieDetail({ 
+  params,
+  searchParams,
+}: { 
+  params: { id: string };
+  searchParams: { [key: string]: string | string[] | undefined };
+}) {
+  const { year, page } = searchParams || {};
+  const backHref = year && page ? `/?year=${year}&page=${page}` : "/";
+
   const movie = await getMovieDetail(params.id);
 
   if (!movie) {
     return (
       <div className="container" style={{ paddingTop: '4rem', textAlign: 'center' }}>
         <h2>영화 정보를 불러올 수 없습니다.</h2>
-        <Link href="/" style={{ color: 'var(--primary)', marginTop: '1rem', display: 'inline-block' }}>메인으로 돌아가기</Link>
+        <Link href={backHref} style={{ color: 'var(--primary)', marginTop: '1rem', display: 'inline-block' }}>메인으로 돌아가기</Link>
       </div>
     );
   }
@@ -91,7 +100,7 @@ export default async function MovieDetail({ params }: { params: { id: string } }
       <div className="detail-banner">
         <img src={movie.backdrop} alt="backdrop" className="backdrop" />
         <div className="container" style={{ width: '100%' }}>
-          <Link href="/" style={{ display: 'inline-flex', alignItems: 'center', gap: '0.5rem', marginBottom: '2rem', color: 'rgba(255,255,255,0.7)', textDecoration: 'none' }}>
+          <Link href={backHref} style={{ display: 'inline-flex', alignItems: 'center', gap: '0.5rem', marginBottom: '2rem', color: 'rgba(255,255,255,0.7)', textDecoration: 'none' }}>
             <ArrowLeft size={16} /> 목록으로 돌아가기
           </Link>
           <div className="detail-content">
