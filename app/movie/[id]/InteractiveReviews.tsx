@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { MessageSquare, Star } from "lucide-react";
+import { MessageSquare, Star, StarHalf, ThumbsUp, ThumbsDown } from "lucide-react";
 
 export default function InteractiveReviews({ initialReviews, movieId }: { initialReviews: any[], movieId: number }) {
   const [reviews, setReviews] = useState<any[]>([]);
@@ -9,7 +9,6 @@ export default function InteractiveReviews({ initialReviews, movieId }: { initia
   const [rating, setRating] = useState(0);
   const [text, setText] = useState("");
 
-  // Load reviews from local storage on mount and combine with initial reviews
   useEffect(() => {
     const saved = localStorage.getItem(`reviews_${movieId}`);
     if (saved) {
@@ -22,7 +21,7 @@ export default function InteractiveReviews({ initialReviews, movieId }: { initia
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (rating === 0) return alert("별점을 선택해주세요.");
-    if (!text.trim()) return alert("감상평을 입력해주세요.");
+    if (!text.trim()) return alert("감상평을 작성해주세요.");
 
     const newReview = {
       id: Date.now(),
@@ -30,7 +29,10 @@ export default function InteractiveReviews({ initialReviews, movieId }: { initia
       text,
       rating,
       platform: "MovieLobby",
-      isLocal: true
+      isLocal: true,
+      date: new Date().toLocaleDateString('ko-KR', { year: 'numeric', month: '2-digit', day: '2-digit' }),
+      likes: 0,
+      dislikes: 0
     };
 
     const saved = localStorage.getItem(`reviews_${movieId}`);
@@ -45,97 +47,230 @@ export default function InteractiveReviews({ initialReviews, movieId }: { initia
     setHoverRating(0);
   };
 
+  const handleVote = (reviewId: number, type: 'like' | 'dislike') => {
+    const updatedReviews = reviews.map(review => {
+      if (review.id === reviewId && review.isLocal) {
+        return {
+          ...review,
+          likes: type === 'like' ? (review.likes || 0) + 1 : (review.likes || 0),
+          dislikes: type === 'dislike' ? (review.dislikes || 0) + 1 : (review.dislikes || 0)
+        };
+      }
+      return review;
+    });
+
+    setReviews(updatedReviews);
+
+    // Update localStorage for local reviews
+    const saved = localStorage.getItem(`reviews_${movieId}`);
+    if (saved) {
+      const localReviews = JSON.parse(saved);
+      const updatedLocal = localReviews.map((r: any) => {
+        if (r.id === reviewId) {
+          return {
+            ...r,
+            likes: type === 'like' ? (r.likes || 0) + 1 : (r.likes || 0),
+            dislikes: type === 'dislike' ? (r.dislikes || 0) + 1 : (r.dislikes || 0)
+          };
+        }
+        return r;
+      });
+      localStorage.setItem(`reviews_${movieId}`, JSON.stringify(updatedLocal));
+    }
+  };
+
+  const renderInteractiveStars = () => {
+    return (
+      <div style={{ display: 'flex', gap: '4px' }}>
+        {[1, 2, 3, 4, 5].map((index) => {
+          const value2 = index * 2;
+          const value1 = value2 - 1;
+          const currentVal = hoverRating || rating;
+          
+          let fill = "transparent";
+          let color = "var(--text-muted)";
+          
+          // Full star
+          if (currentVal >= value2) {
+             return (
+               <div key={index} style={{ position: 'relative', width: '32px', height: '32px' }}>
+                 <Star size={32} fill="var(--accent-pink)" color="var(--accent-pink)" style={{ position: 'absolute', top: 0, left: 0 }} />
+                 <div style={{ position: 'absolute', top: 0, left: 0, width: '50%', height: '100%', cursor: 'pointer', zIndex: 10 }} onMouseEnter={() => setHoverRating(value1)} onMouseLeave={() => setHoverRating(0)} onClick={() => setRating(value1)} />
+                 <div style={{ position: 'absolute', top: 0, left: '50%', width: '50%', height: '100%', cursor: 'pointer', zIndex: 10 }} onMouseEnter={() => setHoverRating(value2)} onMouseLeave={() => setHoverRating(0)} onClick={() => setRating(value2)} />
+               </div>
+             );
+          } 
+          // Half star
+          else if (currentVal === value1) {
+             return (
+               <div key={index} style={{ position: 'relative', width: '32px', height: '32px' }}>
+                 <StarHalf size={32} fill="var(--accent-pink)" color="var(--accent-pink)" style={{ position: 'absolute', top: 0, left: 0 }} />
+                 <div style={{ position: 'absolute', top: 0, left: 0, width: '50%', height: '100%', cursor: 'pointer', zIndex: 10 }} onMouseEnter={() => setHoverRating(value1)} onMouseLeave={() => setHoverRating(0)} onClick={() => setRating(value1)} />
+                 <div style={{ position: 'absolute', top: 0, left: '50%', width: '50%', height: '100%', cursor: 'pointer', zIndex: 10 }} onMouseEnter={() => setHoverRating(value2)} onMouseLeave={() => setHoverRating(0)} onClick={() => setRating(value2)} />
+               </div>
+             );
+          }
+          // Empty star
+          return (
+            <div key={index} style={{ position: 'relative', width: '32px', height: '32px' }}>
+              <Star size={32} color="var(--text-muted)" style={{ position: 'absolute', top: 0, left: 0 }} />
+              <div style={{ position: 'absolute', top: 0, left: 0, width: '50%', height: '100%', cursor: 'pointer', zIndex: 10 }} onMouseEnter={() => setHoverRating(value1)} onMouseLeave={() => setHoverRating(0)} onClick={() => setRating(value1)} />
+              <div style={{ position: 'absolute', top: 0, left: '50%', width: '50%', height: '100%', cursor: 'pointer', zIndex: 10 }} onMouseEnter={() => setHoverRating(value2)} onMouseLeave={() => setHoverRating(0)} onClick={() => setRating(value2)} />
+            </div>
+          );
+        })}
+      </div>
+    );
+  };
+
+  const renderStaticStars = (score: number) => {
+    const fullStars = Math.floor(score / 2);
+    const hasHalfStar = score % 2 !== 0;
+    const emptyStars = 5 - fullStars - (hasHalfStar ? 1 : 0);
+    return (
+      <div style={{ display: 'flex', gap: '2px', alignItems: 'center' }}>
+        {[...Array(fullStars)].map((_, i) => <Star key={`f-${i}`} size={16} fill="var(--accent-pink)" color="var(--accent-pink)" />)}
+        {hasHalfStar && <StarHalf key="h" size={16} fill="var(--accent-pink)" color="var(--accent-pink)" />}
+        {[...Array(emptyStars)].map((_, i) => <Star key={`e-${i}`} size={16} color="var(--card-border)" />)}
+        <span style={{ marginLeft: '6px', fontWeight: 'bold', fontSize: '1.1rem', color: 'var(--foreground)' }}>{score}</span>
+      </div>
+    );
+  };
+
   return (
     <div>
-      <h2 className="section-title"><MessageSquare size={24} color="var(--primary)" /> 실시간 리뷰</h2>
+      <h2 className="section-title"><MessageSquare size={24} color="var(--primary)" /> 실관람객 리뷰</h2>
       
       {/* Review Form */}
       <div className="glass" style={{ padding: '2rem', borderRadius: '12px', marginBottom: '2rem' }}>
-        <h3 style={{ marginBottom: '1rem', fontSize: '1.1rem', color: 'var(--foreground)' }}>내 감상평 남기기</h3>
-        <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-          {/* Star Rating (1-10) */}
-          <div style={{ display: 'flex', alignItems: 'center', gap: '0.2rem' }}>
-            {[...Array(10)].map((_, i) => {
-              const starValue = i + 1;
-              return (
-                <Star
-                  key={starValue}
-                  size={28}
-                  fill={(hoverRating || rating) >= starValue ? "var(--accent-pink)" : "transparent"}
-                  color={(hoverRating || rating) >= starValue ? "var(--accent-pink)" : "var(--text-muted)"}
-                  style={{ cursor: 'pointer', transition: 'all 0.2s' }}
-                  onMouseEnter={() => setHoverRating(starValue)}
-                  onMouseLeave={() => setHoverRating(0)}
-                  onClick={() => setRating(starValue)}
-                />
-              );
-            })}
-            <span style={{ marginLeft: '1rem', color: 'var(--accent-pink)', fontWeight: 'bold', fontSize: '1.2rem' }}>
-              {rating > 0 ? `${rating} / 10` : "별점을 선택해주세요"}
+        <h3 style={{ marginBottom: '1rem', fontSize: '1.1rem', color: 'var(--foreground)', textAlign: 'center' }}>별점을 선택해주세요.</h3>
+        <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '1rem', alignItems: 'center' }}>
+          
+          {/* Interactive Star Rating */}
+          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '0.5rem', marginBottom: '1rem' }}>
+            {renderInteractiveStars()}
+            <span style={{ color: 'var(--accent-pink)', fontWeight: 'bold', fontSize: '1.1rem', minHeight: '1.5rem' }}>
+              {rating > 0 ? `${rating}점` : ""}
             </span>
           </div>
           
-          <textarea
-            value={text}
-            onChange={(e) => setText(e.target.value)}
-            placeholder="이 영화에 대한 감상평을 작성해주세요."
-            style={{
-              width: '100%',
-              minHeight: '100px',
-              padding: '1rem',
-              borderRadius: '8px',
-              border: '1px solid var(--card-border)',
-              background: 'rgba(0,0,0,0.2)',
-              color: 'var(--foreground)',
-              fontSize: '1rem',
-              resize: 'vertical',
-              outline: 'none'
-            }}
-          />
-          <button 
-            type="submit"
-            style={{
-              alignSelf: 'flex-end',
-              background: 'var(--primary)',
-              color: 'var(--foreground)',
-              border: 'none',
-              padding: '0.8rem 2rem',
-              borderRadius: '8px',
-              fontSize: '1rem',
-              fontWeight: 'bold',
-              cursor: 'pointer',
-              transition: 'all 0.2s'
-            }}
-          >
-            등록
-          </button>
+          <div style={{ width: '100%', position: 'relative' }}>
+            <textarea
+              value={text}
+              onChange={(e) => setText(e.target.value)}
+              placeholder="감상평을 작성해주세요."
+              style={{
+                width: '100%',
+                minHeight: '60px',
+                padding: '1rem 120px 1rem 1rem',
+                borderRadius: '8px',
+                border: '1px solid var(--card-border)',
+                background: 'rgba(0,0,0,0.3)',
+                color: 'var(--foreground)',
+                fontSize: '1rem',
+                resize: 'none',
+                outline: 'none',
+                lineHeight: '1.5'
+              }}
+            />
+            <button 
+              type="submit"
+              style={{
+                position: 'absolute',
+                right: '8px',
+                top: '8px',
+                bottom: '12px',
+                background: 'var(--card-bg)',
+                color: 'var(--foreground)',
+                border: '1px solid var(--card-border)',
+                padding: '0 2rem',
+                borderRadius: '6px',
+                fontSize: '1rem',
+                fontWeight: 'bold',
+                cursor: 'pointer',
+                transition: 'all 0.2s'
+              }}
+              onMouseEnter={(e) => { e.currentTarget.style.background = 'var(--primary)'; e.currentTarget.style.borderColor = 'var(--primary)'; }}
+              onMouseLeave={(e) => { e.currentTarget.style.background = 'var(--card-bg)'; e.currentTarget.style.borderColor = 'var(--card-border)'; }}
+            >
+              등록
+            </button>
+          </div>
         </form>
       </div>
 
-      {/* Review List */}
-      {reviews && reviews.length > 0 ? (
-        <div style={{ display: 'grid', gap: '1rem', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))' }}>
-          {reviews.map((review: any) => (
-            <div key={review.id} className="glass" style={{ padding: '1.5rem', borderRadius: '12px', border: review.isLocal ? '1px solid var(--primary)' : '1px solid rgba(255,255,255,0.1)' }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '1rem' }}>
-                <strong style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                  {review.author}
-                  <span style={{ fontSize: '0.7rem', padding: '2px 6px', background: review.isLocal ? 'var(--primary)' : 'rgba(255,255,255,0.1)', borderRadius: '4px', fontWeight: 'normal' }}>
-                    {review.platform}
-                  </span>
-                </strong>
-                {review.rating && <span style={{ color: 'var(--accent-pink)', fontWeight: 'bold' }}>★ {review.rating}</span>}
+      {/* Vertical Review List */}
+      <div style={{ display: 'flex', flexDirection: 'column' }}>
+        {reviews && reviews.length > 0 ? (
+          reviews.map((review: any) => (
+            <div key={review.id} style={{ padding: '1.5rem 0', borderBottom: '1px solid var(--card-border)' }}>
+              
+              {/* Stars and Score */}
+              <div style={{ marginBottom: '0.5rem' }}>
+                {renderStaticStars(review.rating || 0)}
               </div>
-              <p style={{ color: 'var(--foreground)', fontSize: '0.95rem', lineHeight: '1.5', whiteSpace: 'pre-wrap', maxHeight: '150px', overflowY: 'auto' }}>{review.text}</p>
+              
+              {/* User Info */}
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.8rem', fontSize: '0.85rem', color: 'var(--text-muted)' }}>
+                <span style={{ 
+                  padding: '2px 8px', 
+                  background: 'rgba(255,255,255,0.05)', 
+                  borderRadius: '12px', 
+                  border: '1px solid var(--card-border)',
+                  color: 'var(--foreground)'
+                }}>관람객</span>
+                <strong style={{ color: 'var(--foreground)', fontSize: '0.9rem' }}>{review.author}</strong>
+                <span>•</span>
+                <span>{review.date || "2026.08.13"}</span>
+              </div>
+              
+              {/* Review Text */}
+              <p style={{ color: 'var(--foreground)', fontSize: '1rem', lineHeight: '1.6', whiteSpace: 'pre-wrap', marginBottom: '1.2rem' }}>
+                {review.text}
+              </p>
+              
+              {/* Like / Dislike Buttons */}
+              {review.isLocal && (
+                <div style={{ display: 'flex', gap: '0.8rem' }}>
+                  <button 
+                    onClick={() => handleVote(review.id, 'like')}
+                    style={{ 
+                      display: 'flex', alignItems: 'center', gap: '0.4rem', 
+                      background: 'transparent', border: '1px solid var(--card-border)', 
+                      borderRadius: '20px', padding: '4px 12px', 
+                      color: 'var(--text-muted)', cursor: 'pointer', fontSize: '0.85rem',
+                      transition: 'all 0.2s'
+                    }}
+                    onMouseEnter={(e) => e.currentTarget.style.color = 'var(--accent-pink)'}
+                    onMouseLeave={(e) => e.currentTarget.style.color = 'var(--text-muted)'}
+                  >
+                    <ThumbsUp size={14} /> {review.likes || 0}
+                  </button>
+                  <button 
+                    onClick={() => handleVote(review.id, 'dislike')}
+                    style={{ 
+                      display: 'flex', alignItems: 'center', gap: '0.4rem', 
+                      background: 'transparent', border: '1px solid var(--card-border)', 
+                      borderRadius: '20px', padding: '4px 12px', 
+                      color: 'var(--text-muted)', cursor: 'pointer', fontSize: '0.85rem',
+                      transition: 'all 0.2s'
+                    }}
+                    onMouseEnter={(e) => e.currentTarget.style.color = 'var(--danger)'}
+                    onMouseLeave={(e) => e.currentTarget.style.color = 'var(--text-muted)'}
+                  >
+                    <ThumbsDown size={14} /> {review.dislikes || 0}
+                  </button>
+                </div>
+              )}
             </div>
-          ))}
-        </div>
-      ) : (
-        <div style={{ textAlign: 'center', padding: '3rem', background: 'var(--card-bg)', borderRadius: '12px', color: 'var(--text-muted)' }}>
-          <MessageSquare size={48} style={{ margin: '0 auto 1rem', opacity: 0.5 }} />
-          <p>아직 등록된 리뷰가 없습니다.</p>
-        </div>
-      )}
+          ))
+        ) : (
+          <div style={{ textAlign: 'center', padding: '4rem 0', color: 'var(--text-muted)' }}>
+            <MessageSquare size={48} style={{ margin: '0 auto 1rem', opacity: 0.2 }} />
+            <p>아직 등록된 리뷰가 없습니다.</p>
+          </div>
+        )}
+      </div>
     </div>
   );
 }
