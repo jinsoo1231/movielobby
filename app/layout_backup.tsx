@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { Inter, Outfit } from "next/font/google";
 import "./globals.css";
 import Link from "next/link";
-import { Film, Search } from "lucide-react";
+import { Film } from "lucide-react";
 
 const inter = Inter({ subsets: ["latin"], variable: "--font-inter" });
 const outfit = Outfit({ subsets: ["latin"], variable: "--font-outfit" });
@@ -20,22 +20,17 @@ export default function RootLayout({
   return (
     <html lang="ko">
       <body className={`${inter.variable} ${outfit.variable}`}>
-        <header className="header" style={{ background: 'var(--primary)', color: '#fff' }}>
-          <div className="container" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', height: '64px' }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '2rem' }}>
-              <Link href="/" className="logo" style={{ color: '#fff', display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '1.5rem', fontWeight: 'bold' }}>
-                <Film size={28} color="#fff" />
-                MovieLobby
-              </Link>
-              <nav style={{ display: 'flex', gap: '1.5rem', fontSize: '1rem', fontWeight: 600 }}>
-                <Link href="/movies" style={{ color: '#fff' }}>Movies</Link>
-              </nav>
-            </div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '1.5rem' }}>
-              <Link href="/search" style={{ color: '#01b4e4' }}>
-                <Search size={22} strokeWidth={2.5} />
-              </Link>
-            </div>
+        <header className="header glass">
+          <div className="container">
+            <Link href="/" className="logo">
+              <Film size={28} color="var(--primary)" />
+              Movie Lobby
+            </Link>
+            <nav style={{ display: 'flex', gap: '1.5rem', fontSize: '0.9rem', fontWeight: 500 }}>
+              <Link href="/" style={{ color: 'var(--foreground)' }}>홈</Link>
+              <Link href="#" style={{ color: 'var(--text-muted)' }}>박스오피스</Link>
+              <Link href="#" style={{ color: 'var(--text-muted)' }}>맞춤 추천</Link>
+            </nav>
           </div>
         </header>
         <main>{children}</main>

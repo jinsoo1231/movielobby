@@ -1,173 +1,108 @@
 import Link from "next/link";
-import { TrendingUp, Youtube, Search, Compass, Star } from "lucide-react";
-import YearSelector from "./YearSelector";
+import SearchForm from "./SearchForm";
 
-// Server-side data fetching
-async function getMoviesData(page: number = 1, year: number) {
+async function getTrendingMovies() {
   const token = process.env.NEXT_PUBLIC_TMDB_TOKEN;
   if (!token) {
-    console.error("TMDB Token is missing");
-    return { trending: [], nowPlayingIds: new Set(), totalPages: 1 };
+    return [
+      { id: 1, title: "로컬 테스트 1", poster_path: null, release_date: "2026-08-14" },
+      { id: 2, title: "로컬 테스트 2", poster_path: null, release_date: "2026-08-14" },
+      { id: 3, title: "로컬 테스트 3", poster_path: null, release_date: "2026-08-14" },
+      { id: 4, title: "로컬 테스트 4", poster_path: null, release_date: "2026-08-14" },
+      { id: 5, title: "로컬 테스트 5", poster_path: null, release_date: "2026-08-14" }
+    ];
   }
 
   try {
-    const headers = { Authorization: `Bearer ${token}` };
-    
-    // Fetch movies by year sorted by popularity
-    const discoverRes = await fetch(
-      `https://api.themoviedb.org/3/discover/movie?language=ko-KR&primary_release_year=${year}&sort_by=popularity.desc&page=${page}&vote_count.gte=100`, 
-      { headers, next: { revalidate: 3600 } }
-    );
-    
-    // Fetch currently playing movies (to determine status badge)
-    const playingRes = await fetch("https://api.themoviedb.org/3/movie/now_playing?language=ko-KR&region=KR", { 
-      headers,
+    const res = await fetch("https://api.themoviedb.org/3/trending/movie/week?language=ko-KR", {
+      headers: { Authorization: `Bearer ${token}` },
       next: { revalidate: 3600 }
     });
-
-    const discoverData = await discoverRes.json();
-    const playingData = await playingRes.json();
-
-    const nowPlayingIds = new Set((playingData.results || []).map((m: any) => m.id));
-    return { 
-      trending: discoverData.results || [],
-      nowPlayingIds,
-      totalPages: Math.min(discoverData.total_pages || 1, 500) // TMDB API max page is usually 500
-    };
+    const data = await res.json();
+    return data.results ? data.results.slice(0, 10) : [];
   } catch (e) {
-    console.error("Failed to fetch TMDB", e);
-    return { trending: [], nowPlayingIds: new Set(), totalPages: 1 };
+    return [];
   }
 }
 
-const TABS = [
-  { id: "all", label: "Movie Lobby 종합 랭킹", icon: <TrendingUp size={16} /> },
-];
-
-export default async function Home({
-  searchParams,
-}: {
-  searchParams: { [key: string]: string | string[] | undefined };
-}) {
-  const pageParam = typeof searchParams.page === 'string' ? Number(searchParams.page) : 1;
-  const currentPage = isNaN(pageParam) ? 1 : pageParam;
-  
-  const currentYear = new Date().getFullYear();
-  const yearParam = typeof searchParams.year === 'string' ? Number(searchParams.year) : currentYear;
-  const selectedYear = isNaN(yearParam) ? currentYear : yearParam;
-  
-  const { trending, nowPlayingIds, totalPages } = await getMoviesData(currentPage, selectedYear);
+export default async function Home() {
+  const trending = await getTrendingMovies();
 
   return (
-    <div className="container animate-fade-in" style={{ paddingTop: '2rem' }}>
-      <section style={{ marginBottom: '2rem' }}>
-        <h1 style={{ fontSize: '2.5rem', marginBottom: '0.5rem' }}>
-          지금 가장 핫한 <span style={{ color: 'var(--primary)' }}>영화</span>
-        </h1>
-        <p style={{ color: 'var(--text-muted)', fontSize: '1.1rem' }}>
-          연도별 인기 영화 랭킹을 한눈에 확인하세요.
-        </p>
+    <div style={{ paddingBottom: '4rem' }}>
+      {/* Hero Section */}
+      <section style={{
+        position: 'relative',
+        backgroundImage: 'url(https://image.tmdb.org/t/p/original/6XjMwQOqQihe7X495oYtKCH20Hw.jpg)',
+        backgroundSize: 'cover',
+        backgroundPosition: 'center',
+        padding: '6rem 2rem',
+        color: '#fff'
+      }}>
+        {/* Dark overlay */}
+        <div style={{
+          position: 'absolute',
+          top: 0, left: 0, right: 0, bottom: 0,
+          backgroundColor: 'rgba(3, 37, 65, 0.6)'
+        }} />
         
-        {/* Year Selector UI */}
-        <YearSelector currentYear={selectedYear} />
-
-        {!process.env.NEXT_PUBLIC_TMDB_TOKEN && (
-          <div style={{ marginTop: '1rem', padding: '1rem', background: 'rgba(239,68,68,0.2)', border: '1px solid var(--danger)', borderRadius: '8px', color: '#fca5a5' }}>
-            ⚠️ Vercel 설정에서 NEXT_PUBLIC_TMDB_TOKEN 환경변수를 등록해야 실제 데이터가 보입니다.
-          </div>
-        )}
+        <div className="container" style={{ position: 'relative', zIndex: 1 }}>
+          <h1 style={{ fontSize: '3rem', fontWeight: 800, marginBottom: '0.5rem' }}>Welcome.</h1>
+          <h2 style={{ fontSize: '2rem', fontWeight: 600, marginBottom: '3rem' }}>
+            Millions of movies, TV shows and people to discover. Explore now.
+          </h2>
+          
+          <SearchForm />
+        </div>
       </section>
 
-      <section>
-        <div className="tabs-container">
-          {TABS.map((tab, idx) => (
-            <Link 
-              href="/" 
-              key={tab.id}
-              className={`tab-btn ${idx === 0 ? "active" : ""}`}
-              style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}
-            >
-              {tab.icon}
-              {tab.label}
+      {/* Trending Section */}
+      <section className="container" style={{ marginTop: '2.5rem' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '1.5rem', marginBottom: '1.5rem' }}>
+          <h2 style={{ fontSize: '1.5rem', fontWeight: 600 }}>Trending</h2>
+          <div style={{ 
+            display: 'inline-flex', 
+            background: 'var(--card-border)', 
+            borderRadius: '20px',
+            overflow: 'hidden',
+            fontSize: '0.9rem',
+            fontWeight: 600
+          }}>
+            <div style={{ padding: '4px 16px', background: 'var(--primary)', color: '#fff', borderRadius: '20px' }}>Today</div>
+            <div style={{ padding: '4px 16px', color: 'var(--primary)' }}>This Week</div>
+          </div>
+        </div>
+
+        {/* Horizontal Scroll List */}
+        <div style={{ 
+          display: 'flex', 
+          gap: '1.5rem', 
+          overflowX: 'auto', 
+          paddingBottom: '1.5rem',
+          scrollbarWidth: 'thin'
+        }}>
+          {trending.map((movie: any) => (
+            <Link key={movie.id} href={`/movie/${movie.id}`} style={{ minWidth: '150px', flex: '0 0 auto' }}>
+              <div style={{ 
+                width: '150px', 
+                height: '225px', 
+                borderRadius: '8px',
+                backgroundImage: movie.poster_path ? `url(https://image.tmdb.org/t/p/w200${movie.poster_path})` : 'none',
+                backgroundColor: '#ccc',
+                backgroundSize: 'cover',
+                backgroundPosition: 'center',
+                boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
+                marginBottom: '0.8rem'
+              }} />
+              <h3 style={{ fontSize: '0.95rem', fontWeight: 700, color: 'var(--foreground)', marginBottom: '2px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                {movie.title || movie.name}
+              </h3>
+              <p style={{ fontSize: '0.85rem', color: 'var(--text-muted)' }}>
+                {movie.release_date || movie.first_air_date || "Unknown"}
+              </p>
             </Link>
           ))}
         </div>
-
-        <div className="movie-grid">
-          {trending.map((movie: any, index: number) => {
-            const isPlaying = nowPlayingIds.has(movie.id);
-            const posterUrl = movie.poster_path 
-              ? `https://image.tmdb.org/t/p/w500${movie.poster_path}`
-              : "https://via.placeholder.com/300x450/19191E/FFFFFF?text=No+Poster";
-
-            // Calculate actual rank based on current page
-            const rank = (currentPage - 1) * 20 + index + 1;
-
-            return (
-              <Link href={`/movie/${movie.id}?year=${selectedYear}&page=${currentPage}`} key={movie.id}>
-                <div className="movie-card glass">
-                  <img src={posterUrl} alt={movie.title} className="poster" />
-                  
-                  <div className="rank-badge">{rank}</div>
-                  
-                  {isPlaying ? (
-                    <div className="status-badge playing">상영중</div>
-                  ) : (
-                    <div className="status-badge ended">상영종료</div>
-                  )}
-
-                  <div className="info-overlay">
-                    <div className="movie-title">{movie.title}</div>
-                    <div className="movie-meta">
-                      <Star size={14} fill="var(--accent-pink)" color="var(--accent-pink)" />
-                      {movie.vote_average ? movie.vote_average.toFixed(1) : "0.0"}
-                    </div>
-                  </div>
-                </div>
-              </Link>
-            );
-          })}
-        </div>
-
-        {/* Pagination UI */}
-        {totalPages > 1 && (
-          <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '0.5rem', marginTop: '4rem', marginBottom: '2rem' }}>
-            {currentPage > 1 && (
-              <Link href={`/?year=${selectedYear}&page=${currentPage - 1}`} className="tab-btn" style={{ padding: '0.75rem 1rem' }}>
-                이전
-              </Link>
-            )}
-            
-            {/* Show 5 page numbers around the current page */}
-            {[...Array(5)].map((_, i) => {
-              // Adjust start page so it doesn't go below 1 or exceed totalPages
-              let startPage = Math.max(1, currentPage - 2);
-              if (startPage + 4 > totalPages) {
-                startPage = Math.max(1, totalPages - 4);
-              }
-              const pageNum = startPage + i;
-              
-              if (pageNum > totalPages) return null;
-              
-              return (
-                <Link 
-                  key={pageNum} 
-                  href={`/?year=${selectedYear}&page=${pageNum}`} 
-                  className={`tab-btn ${currentPage === pageNum ? "active" : ""}`}
-                  style={{ padding: '0.75rem 1.2rem', minWidth: '45px', textAlign: 'center' }}
-                >
-                  {pageNum}
-                </Link>
-              );
-            })}
-
-            {currentPage < totalPages && (
-              <Link href={`/?year=${selectedYear}&page=${currentPage + 1}`} className="tab-btn" style={{ padding: '0.75rem 1rem' }}>
-                다음
-              </Link>
-            )}
-          </div>
-        )}
       </section>
     </div>
   );
