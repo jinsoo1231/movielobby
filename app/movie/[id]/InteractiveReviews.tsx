@@ -185,46 +185,44 @@ export default function InteractiveReviews({ initialReviews, movieId }: { initia
                  }}
               />
             </div>
-            <textarea
-              value={text}
-              onChange={(e) => setText(e.target.value)}
-              placeholder="감상평을 작성해주세요."
-              style={{
-                width: '100%',
-                minHeight: '60px',
-                padding: '1rem 120px 1rem 1rem',
-                borderRadius: '8px',
-                border: '1px solid var(--card-border)',
-                background: 'rgba(0,0,0,0.3)',
-                color: 'var(--foreground)',
-                fontSize: '1rem',
-                resize: 'none',
-                outline: 'none',
-                lineHeight: '1.5'
-              }}
-            />
-            <button 
-              type="submit"
-              style={{
-                position: 'absolute',
-                right: '8px',
-                top: '8px',
-                bottom: '12px',
-                background: 'var(--card-bg)',
-                color: 'var(--foreground)',
-                border: '1px solid var(--card-border)',
-                padding: '0 2rem',
-                borderRadius: '6px',
-                fontSize: '1rem',
-                fontWeight: 'bold',
-                cursor: 'pointer',
-                transition: 'all 0.2s'
-              }}
-              onMouseEnter={(e) => { e.currentTarget.style.background = 'var(--primary)'; e.currentTarget.style.borderColor = 'var(--primary)'; }}
-              onMouseLeave={(e) => { e.currentTarget.style.background = 'var(--card-bg)'; e.currentTarget.style.borderColor = 'var(--card-border)'; }}
-            >
-              등록
-            </button>
+            <div style={{ display: 'flex', gap: '0.8rem', alignItems: 'stretch' }}>
+              <textarea
+                value={text}
+                onChange={(e) => setText(e.target.value)}
+                placeholder="감상평을 작성해주세요."
+                style={{
+                  flex: 1,
+                  minHeight: '80px',
+                  padding: '1rem',
+                  borderRadius: '8px',
+                  border: '1px solid var(--card-border)',
+                  background: 'rgba(0,0,0,0.3)',
+                  color: 'var(--foreground)',
+                  fontSize: '1rem',
+                  resize: 'none',
+                  outline: 'none',
+                  lineHeight: '1.5'
+                }}
+              />
+              <button 
+                type="submit"
+                style={{
+                  width: '90px',
+                  background: 'var(--card-bg)',
+                  color: 'var(--foreground)',
+                  border: '1px solid var(--card-border)',
+                  borderRadius: '8px',
+                  fontSize: '1rem',
+                  fontWeight: 'bold',
+                  cursor: 'pointer',
+                  transition: 'all 0.2s'
+                }}
+                onMouseEnter={(e) => { e.currentTarget.style.background = 'var(--primary)'; e.currentTarget.style.borderColor = 'var(--primary)'; }}
+                onMouseLeave={(e) => { e.currentTarget.style.background = 'var(--card-bg)'; e.currentTarget.style.borderColor = 'var(--card-border)'; }}
+              >
+                등록
+              </button>
+            </div>
           </div>
         </form>
       </div>
