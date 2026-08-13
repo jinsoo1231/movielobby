@@ -166,12 +166,12 @@ export default function InteractiveReviews({ initialReviews, movieId }: { initia
           </div>
           
           <div style={{ width: '100%', position: 'relative' }}>
-            <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: '0.5rem' }}>
+            <div style={{ display: 'flex', justifyContent: 'flex-start', marginBottom: '0.5rem' }}>
               <input 
                  type="text" 
                  value={nickname} 
                  onChange={e => setNickname(e.target.value)}
-                 placeholder="닉네임 (선택)"
+                 placeholder="User Name"
                  maxLength={20}
                  style={{
                    padding: '0.6rem 1rem',
