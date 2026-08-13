@@ -5,7 +5,25 @@ import InteractiveReviews from "./InteractiveReviews";
 
 async function getMovieDetail(id: string) {
   const token = process.env.NEXT_PUBLIC_TMDB_TOKEN;
-  if (!token) return null;
+  if (!token) {
+    return {
+      id: parseInt(id) || 123,
+      title: "로컬 테스트용 임시 영화",
+      genres: ["액션", "코미디"],
+      runtime: "120분",
+      releaseDate: "2026-08-14",
+      rating: "8.5",
+      director: "MovieLobby",
+      cast: ["로컬 테스트", "환경변수 없음"],
+      synopsis: "Vercel 환경변수(TMDB API 키)가 로컬에는 없어서 임시로 띄운 가짜 데이터입니다. 이 페이지에서 새로 개편된 리뷰 UI를 마음껏 테스트해보세요!",
+      poster: "https://via.placeholder.com/300x450/19191E/FFFFFF?text=Test+Poster",
+      backdrop: "https://via.placeholder.com/1200x600/19191E/FFFFFF?text=Test+Backdrop",
+      trailerId: null,
+      gallery: [],
+      franchise: [],
+      reviews: []
+    };
+  }
   const headers = { Authorization: `Bearer ${token}` };
 
   try {

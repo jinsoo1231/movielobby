@@ -8,6 +8,7 @@ export default function InteractiveReviews({ initialReviews, movieId }: { initia
   const [hoverRating, setHoverRating] = useState(0);
   const [rating, setRating] = useState(0);
   const [text, setText] = useState("");
+  const [nickname, setNickname] = useState("");
 
   useEffect(() => {
     const saved = localStorage.getItem(`reviews_${movieId}`);
@@ -23,9 +24,19 @@ export default function InteractiveReviews({ initialReviews, movieId }: { initia
     if (rating === 0) return alert("별점을 선택해주세요.");
     if (!text.trim()) return alert("감상평을 작성해주세요.");
 
+    let finalAuthor = nickname.trim();
+    if (!finalAuthor) {
+       const anonReviews = reviews.filter(r => r.author.startsWith("Anonymous user"));
+       const maxId = anonReviews.reduce((max, r) => {
+           const num = parseInt(r.author.replace("Anonymous user ", "")) || 0;
+           return num > max ? num : max;
+       }, 0);
+       finalAuthor = `Anonymous user ${maxId + 1}`;
+    }
+
     const newReview = {
       id: Date.now(),
-      author: "익명 유저",
+      author: finalAuthor,
       text,
       rating,
       platform: "MovieLobby",
@@ -139,7 +150,7 @@ export default function InteractiveReviews({ initialReviews, movieId }: { initia
 
   return (
     <div>
-      <h2 className="section-title"><MessageSquare size={24} color="var(--primary)" /> 실관람객 리뷰</h2>
+      <h2 className="section-title"><MessageSquare size={24} color="var(--primary)" /> Reviews</h2>
       
       {/* Review Form */}
       <div className="glass" style={{ padding: '2rem', borderRadius: '12px', marginBottom: '2rem' }}>
@@ -155,6 +166,25 @@ export default function InteractiveReviews({ initialReviews, movieId }: { initia
           </div>
           
           <div style={{ width: '100%', position: 'relative' }}>
+            <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: '0.5rem' }}>
+              <input 
+                 type="text" 
+                 value={nickname} 
+                 onChange={e => setNickname(e.target.value)}
+                 placeholder="닉네임 (선택)"
+                 maxLength={20}
+                 style={{
+                   padding: '0.6rem 1rem',
+                   borderRadius: '6px',
+                   border: '1px solid var(--card-border)',
+                   background: 'rgba(0,0,0,0.3)',
+                   color: 'var(--foreground)',
+                   outline: 'none',
+                   width: '200px',
+                   fontSize: '0.9rem'
+                 }}
+              />
+            </div>
             <textarea
               value={text}
               onChange={(e) => setText(e.target.value)}
