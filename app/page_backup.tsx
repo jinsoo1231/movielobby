@@ -42,6 +42,9 @@ async function getMoviesData(page: number = 1, year: number) {
 
 const TABS = [
   { id: "all", label: "Movie Lobby 종합 랭킹", icon: <TrendingUp size={16} /> },
+  { id: "youtube", label: "YouTube 트렌드", icon: <Youtube size={16} /> },
+  { id: "google", label: "Google 검색순위", icon: <Search size={16} /> },
+  { id: "naver", label: "네이버 실시간", icon: <Compass size={16} /> },
 ];
 
 export default async function Home({
