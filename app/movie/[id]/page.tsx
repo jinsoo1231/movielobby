@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { Play, ArrowLeft, Star, Clock, Calendar, MessageSquare, Youtube } from "lucide-react";
 import FranchiseTimeline from "./FranchiseTimeline";
+import InteractiveReviews from "./InteractiveReviews";
 
 async function getMovieDetail(id: string) {
   const token = process.env.NEXT_PUBLIC_TMDB_TOKEN;
@@ -8,12 +9,16 @@ async function getMovieDetail(id: string) {
   const headers = { Authorization: `Bearer ${token}` };
 
   try {
-    const res = await fetch(`https://api.themoviedb.org/3/movie/${id}?language=ko-KR&append_to_response=credits,videos,images,reviews`, {
+    const res = await fetch(`https://api.themoviedb.org/3/movie/${id}?language=ko-KR&append_to_response=credits,videos,images`, {
       headers,
       next: { revalidate: 3600 }
     });
     if (!res.ok) return null;
     const data = await res.json();
+    
+    // Fetch english reviews since korean reviews are very sparse
+    const reviewsRes = await fetch(`https://api.themoviedb.org/3/movie/${id}/reviews?language=en-US`, { headers, next: { revalidate: 3600 } });
+    const reviewsData = reviewsRes.ok ? await reviewsRes.json() : { results: [] };
     
     // Fetch franchise if exists
     let franchise: any[] = [];
@@ -45,7 +50,7 @@ async function getMovieDetail(id: string) {
     const gallery = (data.images?.backdrops || []).slice(0, 4).map((img: any) => `https://image.tmdb.org/t/p/w500${img.file_path}`);
 
     // Extract reviews
-    const reviews = (data.reviews?.results || []).map((r: any) => ({
+    const reviews = (reviewsData.results || []).map((r: any) => ({
       id: r.id,
       author: r.author,
       text: r.content,
@@ -167,31 +172,7 @@ export default async function MovieDetail({
         <FranchiseTimeline franchise={movie.franchise} />
 
         {/* Reviews Feed Section */}
-        <h2 className="section-title"><MessageSquare size={24} color="var(--primary)" /> 실시간 리뷰</h2>
-        {movie.reviews && movie.reviews.length > 0 ? (
-          <div style={{ display: 'grid', gap: '1rem', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))' }}>
-            {movie.reviews.map((review: any) => (
-              <div key={review.id} className="glass" style={{ padding: '1.5rem', borderRadius: '12px' }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '1rem' }}>
-                  <strong style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                    {review.author}
-                    <span style={{ fontSize: '0.7rem', padding: '2px 6px', background: 'rgba(255,255,255,0.1)', borderRadius: '4px', fontWeight: 'normal' }}>
-                      {review.platform}
-                    </span>
-                  </strong>
-                  {review.rating && <span style={{ color: 'var(--accent-pink)', fontWeight: 'bold' }}>★ {review.rating}</span>}
-                </div>
-                {/* 긴 리뷰 내용이 UI를 망치지 않도록 제한 */}
-                <p style={{ color: 'var(--foreground)', fontSize: '0.95rem', lineHeight: '1.5', whiteSpace: 'pre-wrap', maxHeight: '150px', overflowY: 'auto' }}>{review.text}</p>
-              </div>
-            ))}
-          </div>
-        ) : (
-          <div style={{ textAlign: 'center', padding: '3rem', background: 'var(--card-bg)', borderRadius: '12px', color: 'var(--text-muted)' }}>
-            <MessageSquare size={48} style={{ margin: '0 auto 1rem', opacity: 0.5 }} />
-            <p>아직 등록된 리뷰가 없습니다.</p>
-          </div>
-        )}
+        <InteractiveReviews initialReviews={movie.reviews} movieId={movie.id} />
       </div>
     </div>
   );
