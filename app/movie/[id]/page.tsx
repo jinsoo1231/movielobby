@@ -16,10 +16,6 @@ async function getMovieDetail(id: string) {
     if (!res.ok) return null;
     const data = await res.json();
     
-    // Fetch english reviews since korean reviews are very sparse
-    const reviewsRes = await fetch(`https://api.themoviedb.org/3/movie/${id}/reviews?language=en-US`, { headers, next: { revalidate: 3600 } });
-    const reviewsData = reviewsRes.ok ? await reviewsRes.json() : { results: [] };
-    
     // Fetch franchise if exists
     let franchise: any[] = [];
     if (data.belongs_to_collection) {
@@ -49,15 +45,6 @@ async function getMovieDetail(id: string) {
     // Extract images
     const gallery = (data.images?.backdrops || []).slice(0, 4).map((img: any) => `https://image.tmdb.org/t/p/w500${img.file_path}`);
 
-    // Extract reviews
-    const reviews = (reviewsData.results || []).map((r: any) => ({
-      id: r.id,
-      author: r.author,
-      text: r.content,
-      rating: r.author_details?.rating || null,
-      platform: "TMDB"
-    }));
-
     return {
       id: data.id,
       title: data.title,
@@ -73,7 +60,7 @@ async function getMovieDetail(id: string) {
       trailerId: trailer?.key,
       gallery,
       franchise,
-      reviews
+      reviews: []
     };
   } catch (e) {
     console.error("Failed to fetch movie detail", e);
