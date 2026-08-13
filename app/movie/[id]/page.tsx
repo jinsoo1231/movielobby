@@ -8,7 +8,7 @@ async function getMovieDetail(id: string) {
   const headers = { Authorization: `Bearer ${token}` };
 
   try {
-    const res = await fetch(`https://api.themoviedb.org/3/movie/${id}?language=ko-KR&append_to_response=credits,videos,images`, {
+    const res = await fetch(`https://api.themoviedb.org/3/movie/${id}?language=ko-KR&append_to_response=credits,videos,images,reviews`, {
       headers,
       next: { revalidate: 3600 }
     });
@@ -44,6 +44,15 @@ async function getMovieDetail(id: string) {
     // Extract images
     const gallery = (data.images?.backdrops || []).slice(0, 4).map((img: any) => `https://image.tmdb.org/t/p/w500${img.file_path}`);
 
+    // Extract reviews
+    const reviews = (data.reviews?.results || []).map((r: any) => ({
+      id: r.id,
+      author: r.author,
+      text: r.content,
+      rating: r.author_details?.rating || null,
+      platform: "TMDB"
+    }));
+
     return {
       id: data.id,
       title: data.title,
@@ -58,7 +67,8 @@ async function getMovieDetail(id: string) {
       backdrop: data.backdrop_path ? `https://image.tmdb.org/t/p/original${data.backdrop_path}` : "https://via.placeholder.com/1200x600/19191E/FFFFFF?text=No+Backdrop",
       trailerId: trailer?.key,
       gallery,
-      franchise
+      franchise,
+      reviews
     };
   } catch (e) {
     console.error("Failed to fetch movie detail", e);
@@ -87,12 +97,7 @@ export default async function MovieDetail({
     );
   }
 
-  // Mock Reviews since TMDB korean reviews are sparse
-  const mockReviews = [
-    { id: 1, author: "영화조아", text: "정말 훌륭한 연출과 스토리가 돋보입니다!", rating: 9, platform: "Naver" },
-    { id: 2, author: "Cinephile", text: "기대했던 것보다 훨씬 더 재미있었어요. 추천합니다.", rating: 8, platform: "MovieLobby" },
-    { id: 3, author: "PopcornLover", text: "시간 가는 줄 모르고 봤네요.", rating: 10, platform: "YouTube" }
-  ];
+  // Real reviews fetched from TMDB
 
   return (
     <div className="animate-fade-in">
@@ -163,22 +168,30 @@ export default async function MovieDetail({
 
         {/* Reviews Feed Section */}
         <h2 className="section-title"><MessageSquare size={24} color="var(--primary)" /> 실시간 리뷰</h2>
-        <div style={{ display: 'grid', gap: '1rem', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))' }}>
-          {mockReviews.map(review => (
-            <div key={review.id} className="glass" style={{ padding: '1.5rem', borderRadius: '12px' }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '1rem' }}>
-                <strong style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                  {review.author}
-                  <span style={{ fontSize: '0.7rem', padding: '2px 6px', background: 'rgba(255,255,255,0.1)', borderRadius: '4px', fontWeight: 'normal' }}>
-                    {review.platform}
-                  </span>
-                </strong>
-                <span style={{ color: 'var(--accent-pink)', fontWeight: 'bold' }}>★ {review.rating}</span>
+        {movie.reviews && movie.reviews.length > 0 ? (
+          <div style={{ display: 'grid', gap: '1rem', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))' }}>
+            {movie.reviews.map((review: any) => (
+              <div key={review.id} className="glass" style={{ padding: '1.5rem', borderRadius: '12px' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '1rem' }}>
+                  <strong style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                    {review.author}
+                    <span style={{ fontSize: '0.7rem', padding: '2px 6px', background: 'rgba(255,255,255,0.1)', borderRadius: '4px', fontWeight: 'normal' }}>
+                      {review.platform}
+                    </span>
+                  </strong>
+                  {review.rating && <span style={{ color: 'var(--accent-pink)', fontWeight: 'bold' }}>★ {review.rating}</span>}
+                </div>
+                {/* 긴 리뷰 내용이 UI를 망치지 않도록 제한 */}
+                <p style={{ color: 'var(--foreground)', fontSize: '0.95rem', lineHeight: '1.5', whiteSpace: 'pre-wrap', maxHeight: '150px', overflowY: 'auto' }}>{review.text}</p>
               </div>
-              <p style={{ color: 'var(--foreground)', fontSize: '0.95rem', lineHeight: '1.5' }}>{review.text}</p>
-            </div>
-          ))}
-        </div>
+            ))}
+          </div>
+        ) : (
+          <div style={{ textAlign: 'center', padding: '3rem', background: 'var(--card-bg)', borderRadius: '12px', color: 'var(--text-muted)' }}>
+            <MessageSquare size={48} style={{ margin: '0 auto 1rem', opacity: 0.5 }} />
+            <p>아직 등록된 리뷰가 없습니다.</p>
+          </div>
+        )}
       </div>
     </div>
   );
