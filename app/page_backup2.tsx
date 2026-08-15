@@ -1,17 +1,16 @@
 import Link from "next/link";
-import HeroCarousel from "./HeroCarousel";
+import SearchForm from "./SearchForm";
 
 async function getTrendingMovies() {
   const token = process.env.NEXT_PUBLIC_TMDB_TOKEN;
   if (!token) {
-    const dummy = [
+    return [
       { id: 1, title: "로컬 테스트 1", poster_path: null, release_date: "2026-08-14" },
       { id: 2, title: "로컬 테스트 2", poster_path: null, release_date: "2026-08-14" },
       { id: 3, title: "로컬 테스트 3", poster_path: null, release_date: "2026-08-14" },
       { id: 4, title: "로컬 테스트 4", poster_path: null, release_date: "2026-08-14" },
       { id: 5, title: "로컬 테스트 5", poster_path: null, release_date: "2026-08-14" }
     ];
-    return { top5: dummy, allTrending: dummy };
   }
 
   try {
@@ -20,47 +19,35 @@ async function getTrendingMovies() {
       next: { revalidate: 3600 }
     });
     const data = await res.json();
-    if (!data.results) return { top5: [], allTrending: [] };
-
-    const top5 = data.results.slice(0, 5);
-    const top5WithTrailers = await Promise.all(
-      top5.map(async (movie: any) => {
-        try {
-          const videoRes = await fetch(`https://api.themoviedb.org/3/movie/${movie.id}/videos?language=ko-KR`, {
-            headers: { Authorization: `Bearer ${token}` }
-          });
-          if (videoRes.ok) {
-            const videoData = await videoRes.json();
-            const trailer = videoData.results?.find((v: any) => v.site === "YouTube" && v.type === "Trailer");
-            if (trailer) return { ...movie, trailerId: trailer.key };
-            
-            const videoResEn = await fetch(`https://api.themoviedb.org/3/movie/${movie.id}/videos?language=en-US`, {
-              headers: { Authorization: `Bearer ${token}` }
-            });
-            if (videoResEn.ok) {
-                const videoDataEn = await videoResEn.json();
-                const trailerEn = videoDataEn.results?.find((v: any) => v.site === "YouTube" && v.type === "Trailer");
-                return { ...movie, trailerId: trailerEn?.key || null };
-            }
-          }
-        } catch(e) {}
-        return { ...movie, trailerId: null };
-      })
-    );
-
-    return { top5: top5WithTrailers, allTrending: data.results.slice(0, 10) };
+    return data.results ? data.results.slice(0, 10) : [];
   } catch (e) {
-    return { top5: [], allTrending: [] };
+    return [];
   }
 }
 
 export default async function Home() {
-  const { top5, allTrending } = await getTrendingMovies();
+  const trending = await getTrendingMovies();
 
   return (
     <div style={{ paddingBottom: '4rem' }}>
       {/* Hero Section */}
-      <HeroCarousel movies={top5} />
+      <section className="hero-section">
+        {/* Dark overlay */}
+        <div style={{
+          position: 'absolute',
+          top: 0, left: 0, right: 0, bottom: 0,
+          backgroundColor: 'rgba(3, 37, 65, 0.6)'
+        }} />
+        
+        <div className="container" style={{ position: 'relative', zIndex: 1 }}>
+          <h1 className="hero-title">Welcome.</h1>
+          <h2 className="hero-subtitle">
+            Millions of movies, TV shows and people to discover. Explore now.
+          </h2>
+          
+          <SearchForm />
+        </div>
+      </section>
 
       {/* Trending Section */}
       <section className="container" style={{ marginTop: '2.5rem' }}>
@@ -87,7 +74,7 @@ export default async function Home() {
           paddingBottom: '1.5rem',
           scrollbarWidth: 'thin'
         }}>
-          {allTrending.map((movie: any) => (
+          {trending.map((movie: any) => (
             <Link key={movie.id} href={`/movie/${movie.id}`} style={{ minWidth: '150px', flex: '0 0 auto' }}>
               <div style={{ 
                 width: '150px', 

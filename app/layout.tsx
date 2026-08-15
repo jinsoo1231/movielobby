@@ -2,7 +2,8 @@ import type { Metadata } from "next";
 import { Inter, Outfit } from "next/font/google";
 import "./globals.css";
 import Link from "next/link";
-import { Film, Search } from "lucide-react";
+import { Film } from "lucide-react";
+import SearchForm from "./SearchForm";
 
 const inter = Inter({ subsets: ["latin"], variable: "--font-inter" });
 const outfit = Outfit({ subsets: ["latin"], variable: "--font-outfit" });
@@ -32,9 +33,7 @@ export default function RootLayout({
               </nav>
             </div>
             <div style={{ display: 'flex', alignItems: 'center', gap: '1.5rem' }}>
-              <Link href="/search" style={{ color: '#01b4e4' }}>
-                <Search size={22} strokeWidth={2.5} />
-              </Link>
+              <SearchForm />
             </div>
           </div>
         </header>

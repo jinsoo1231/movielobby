@@ -1,6 +1,7 @@
 "use client";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { Search } from "lucide-react";
 
 export default function SearchForm() {
   const [query, setQuery] = useState("");
@@ -14,40 +15,43 @@ export default function SearchForm() {
   };
 
   return (
-    <form onSubmit={handleSearch} style={{ position: 'relative', width: '100%', maxWidth: '1000px' }}>
+    <form onSubmit={handleSearch} style={{ position: 'relative', width: '100%', maxWidth: '300px', display: 'flex' }}>
       <input 
         type="text" 
         value={query}
         onChange={e => setQuery(e.target.value)}
-        placeholder="Search for a movie, tv show, person......"
+        placeholder="Search movies..."
         style={{
           width: '100%',
-          padding: '1rem 8rem 1rem 1.5rem',
-          borderRadius: '30px',
-          border: 'none',
-          fontSize: '1.1rem',
+          padding: '0.4rem 2.5rem 0.4rem 1rem',
+          borderRadius: '20px',
+          border: '1px solid rgba(255,255,255,0.2)',
+          background: 'rgba(255,255,255,0.1)',
+          fontSize: '0.9rem',
+          color: '#fff',
           outline: 'none',
-          color: '#000'
         }}
       />
       <button 
         type="submit"
         style={{
           position: 'absolute',
-          right: 0,
-          top: 0,
-          bottom: 0,
-          background: 'var(--accent-blue)',
+          right: '8px',
+          top: '50%',
+          transform: 'translateY(-50%)',
+          background: 'transparent',
           color: '#fff',
           border: 'none',
-          borderRadius: '30px',
-          padding: '0 2rem',
-          fontSize: '1rem',
-          fontWeight: 700,
-          cursor: 'pointer'
+          cursor: 'pointer',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          opacity: 0.8
         }}
+        onMouseEnter={(e) => e.currentTarget.style.opacity = '1'}
+        onMouseLeave={(e) => e.currentTarget.style.opacity = '0.8'}
       >
-        Search
+        <Search size={16} strokeWidth={2.5} />
       </button>
     </form>
   );
