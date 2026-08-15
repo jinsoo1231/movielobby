@@ -32,11 +32,22 @@ export default async function TalksMainPage() {
   const hotMovies = await getHotMovies();
   
   // Fetch recent posts across all movies
-  const { data: recentPosts } = await supabase
+  const { data } = await supabase
     .from('talk_posts')
     .select('id, movie_id, movie_title, title, author, views, likes, created_at')
     .order('created_at', { ascending: false })
-    .limit(10);
+    .limit(20);
+  const recentPosts = (data as any[]) || [];
+
+  const formatDate = (dateString: string) => {
+    const date = new Date(dateString);
+    const now = new Date();
+    const isToday = date.getDate() === now.getDate() && date.getMonth() === now.getMonth() && date.getFullYear() === now.getFullYear();
+    if (isToday) {
+      return `${String(date.getHours()).padStart(2, '0')}:${String(date.getMinutes()).padStart(2, '0')}`;
+    }
+    return `${date.getFullYear()}.${String(date.getMonth() + 1).padStart(2, '0')}.${String(date.getDate()).padStart(2, '0')}.`;
+  };
 
   return (
     <div className="animate-fade-in" style={{ paddingBottom: '4rem' }}>
@@ -95,43 +106,65 @@ export default async function TalksMainPage() {
             <Clock color="var(--primary)" /> 실시간 최신 글
           </h2>
           
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-            {recentPosts && recentPosts.length > 0 ? (
-              recentPosts.map((post: any) => (
-                <Link 
-                  href={`/talks/${post.movie_id}/${post.id}`} 
-                  key={post.id}
-                  className="glass hover-lift"
-                  style={{ 
-                    padding: '1.5rem', borderRadius: '12px', display: 'flex', flexDirection: 'column', gap: '0.5rem',
-                    textDecoration: 'none', color: 'inherit', transition: 'transform 0.2s'
-                  }}
-                >
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.5rem' }}>
-                    <span style={{ 
-                      background: 'var(--primary)', color: '#fff', fontSize: '0.8rem', 
-                      padding: '2px 8px', borderRadius: '12px', fontWeight: 'bold' 
-                    }}>
-                      {post.movie_title || "영화"}
-                    </span>
-                    <span style={{ color: 'var(--text-muted)', fontSize: '0.85rem' }}>
-                      {new Date(post.created_at).toLocaleDateString()}
-                    </span>
-                  </div>
-                  <h3 style={{ fontSize: '1.2rem', color: '#fff', margin: 0 }}>{post.title}</h3>
-                  <div style={{ display: 'flex', gap: '1rem', color: 'var(--text-muted)', fontSize: '0.9rem', marginTop: '0.5rem' }}>
-                    <span>작성자: {post.author}</span>
-                    <span>조회수 {post.views || 0}</span>
-                    <span style={{ color: 'var(--accent-pink)' }}>추천 {post.likes || 0}</span>
-                  </div>
-                </Link>
-              ))
-            ) : (
-              <div className="glass" style={{ padding: '4rem', textAlign: 'center', borderRadius: '12px', color: 'var(--text-muted)' }}>
-                <MessageSquare size={48} style={{ margin: '0 auto 1rem', opacity: 0.2 }} />
-                <p>아직 등록된 토론 글이 없습니다. 첫 번째 글의 주인공이 되어보세요!</p>
-              </div>
-            )}
+          <div style={{ width: '100%', fontSize: '0.95rem' }}>
+            {/* Table Header */}
+            <div style={{ 
+              display: 'grid', 
+              gridTemplateColumns: '1fr 120px 100px 80px 80px', 
+              padding: '1rem 0', 
+              borderBottom: '1px solid var(--card-border)', 
+              borderTop: '2px solid var(--foreground)', 
+              fontWeight: 'bold', 
+              color: 'var(--text-muted)', 
+              textAlign: 'center' 
+            }}>
+              <div style={{ textAlign: 'left', paddingLeft: '1rem' }}>제목</div>
+              <div>작성자</div>
+              <div>작성일</div>
+              <div>조회수</div>
+              <div>좋아요</div>
+            </div>
+
+            {/* Table Rows */}
+            <div style={{ display: 'flex', flexDirection: 'column' }}>
+              {recentPosts && recentPosts.length > 0 ? (
+                recentPosts.map((post: any) => (
+                  <Link 
+                    href={`/talks/${post.movie_id}/${post.id}`} 
+                    key={post.id}
+                    className="hover-bg-light"
+                    style={{ 
+                      display: 'grid', 
+                      gridTemplateColumns: '1fr 120px 100px 80px 80px', 
+                      padding: '0.8rem 0', 
+                      borderBottom: '1px solid rgba(255,255,255,0.05)', 
+                      alignItems: 'center',
+                      textDecoration: 'none', 
+                      color: 'inherit'
+                    }}
+                  >
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.8rem', textAlign: 'left', paddingLeft: '1rem', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                      <span style={{ 
+                        background: 'var(--primary)', color: '#fff', fontSize: '0.75rem', 
+                        padding: '2px 8px', borderRadius: '12px', fontWeight: 'bold', flexShrink: 0 
+                      }}>
+                        {post.movie_title || "영화"}
+                      </span>
+                      <span style={{ overflow: 'hidden', textOverflow: 'ellipsis' }}>{post.title}</span>
+                    </div>
+                    <div style={{ textAlign: 'center', color: '#ccc' }}>{post.author}</div>
+                    <div style={{ textAlign: 'center', color: 'var(--text-muted)', fontSize: '0.9rem' }}>{formatDate(post.created_at)}</div>
+                    <div style={{ textAlign: 'center', color: 'var(--text-muted)', fontSize: '0.9rem' }}>{post.views || 0}</div>
+                    <div style={{ textAlign: 'center', color: 'var(--text-muted)', fontSize: '0.9rem' }}>{post.likes || 0}</div>
+                  </Link>
+                ))
+              ) : (
+                <div style={{ padding: '4rem', textAlign: 'center', color: 'var(--text-muted)' }}>
+                  <MessageSquare size={48} style={{ margin: '0 auto 1rem', opacity: 0.2 }} />
+                  <p>아직 등록된 토론 글이 없습니다. 첫 번째 글의 주인공이 되어보세요!</p>
+                </div>
+              )}
+            </div>
           </div>
         </section>
       </div>
