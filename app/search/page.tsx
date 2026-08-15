@@ -23,6 +23,7 @@ export default async function SearchPage({
   searchParams: { [key: string]: string | string[] | undefined };
 }) {
   const q = typeof searchParams.q === 'string' ? searchParams.q : '';
+  const mode = typeof searchParams.mode === 'string' ? searchParams.mode : '';
   const results = q ? await getSearchResults(q) : [];
   
   // Filter out people, mostly want movies and tv
@@ -48,8 +49,15 @@ export default async function SearchPage({
         </div>
       ) : (
         <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-          {filtered.map((item: any) => (
-            <Link key={item.id} href={`/movie/${item.id}`} style={{ 
+          {filtered.map((item: any) => {
+            const title = item.title || item.name;
+            const posterUrl = item.poster_path ? `https://image.tmdb.org/t/p/w200${item.poster_path}` : "https://via.placeholder.com/200x300/19191E/FFFFFF?text=No+Poster";
+            const targetHref = mode === 'talks' 
+              ? `/talks/${item.id}?title=${encodeURIComponent(title)}&poster=${encodeURIComponent(posterUrl)}` 
+              : `/movie/${item.id}`;
+            
+            return (
+            <Link key={item.id} href={targetHref} style={{ 
               display: 'flex', 
               border: '1px solid var(--card-border)',
               borderRadius: '8px',
@@ -84,7 +92,8 @@ export default async function SearchPage({
                 </p>
               </div>
             </Link>
-          ))}
+            );
+          })}
         </div>
       )}
     </div>

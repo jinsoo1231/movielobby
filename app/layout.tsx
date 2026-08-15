@@ -30,6 +30,7 @@ export default function RootLayout({
               </Link>
               <nav style={{ display: 'flex', gap: '1.5rem', fontSize: '1rem', fontWeight: 600 }}>
                 <Link href="/movies" style={{ color: '#fff' }}>Movies</Link>
+                <Link href="/talks" style={{ color: '#fff' }}>Talks</Link>
               </nav>
             </div>
             <div style={{ display: 'flex', alignItems: 'center', gap: '1.5rem' }}>

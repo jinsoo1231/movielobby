@@ -121,7 +121,21 @@ export default async function MovieDetail({
           <div className="detail-content">
             <img src={movie.poster} alt={movie.title} className="detail-poster" />
             <div className="detail-info">
-              <h1 className="detail-title">{movie.title}</h1>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '1.5rem', flexWrap: 'wrap' }}>
+                <h1 className="detail-title" style={{ margin: 0 }}>{movie.title}</h1>
+                <Link 
+                  href={`/talks/${movie.id}?title=${encodeURIComponent(movie.title)}&poster=${encodeURIComponent(movie.poster)}`} 
+                  style={{ 
+                    display: 'inline-flex', alignItems: 'center', gap: '0.4rem', 
+                    padding: '0.5rem 1rem', borderRadius: '20px', 
+                    background: 'var(--primary)', color: '#fff', 
+                    fontWeight: 'bold', fontSize: '0.95rem', textDecoration: 'none',
+                    boxShadow: '0 4px 12px rgba(1, 180, 228, 0.4)'
+                  }}
+                >
+                  <MessageSquare size={16} /> Talks 참여하기
+                </Link>
+              </div>
               <div>
                 {movie.genres.map((g: string) => <span key={g} className="tag">{g}</span>)}
               </div>
