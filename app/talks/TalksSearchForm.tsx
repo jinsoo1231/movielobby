@@ -53,6 +53,7 @@ export default function TalksSearchForm() {
           justifyContent: 'center',
           transition: 'background 0.2s'
         }}
+      >
         <Search size={20} strokeWidth={2.5} />
       </button>
     </form>
