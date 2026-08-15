@@ -73,8 +73,8 @@ export default function BoardSearch({ movieId, movieTitle, moviePoster }: { movi
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
-            transition: 'background 0.2s'
           }}
+        >
           <Search size={18} />
         </button>
         
