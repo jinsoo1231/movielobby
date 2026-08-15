@@ -226,7 +226,7 @@ export default function InteractiveReviews({ initialReviews, movieId }: { initia
                  }}
               />
             </div>
-            <div className="review-input-group">
+            <div style={{ display: 'flex', gap: '0.8rem', alignItems: 'stretch' }}>
               <textarea
                 value={text}
                 onChange={(e) => setText(e.target.value)}
@@ -247,7 +247,6 @@ export default function InteractiveReviews({ initialReviews, movieId }: { initia
               />
               <button 
                 type="submit"
-                className="review-submit-btn"
                 style={{
                   width: '90px',
                   background: 'var(--card-bg)',

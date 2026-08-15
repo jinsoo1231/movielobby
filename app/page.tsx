@@ -31,14 +31,7 @@ export default async function Home() {
   return (
     <div style={{ paddingBottom: '4rem' }}>
       {/* Hero Section */}
-      <section style={{
-        position: 'relative',
-        backgroundImage: 'url(https://image.tmdb.org/t/p/original/6XjMwQOqQihe7X495oYtKCH20Hw.jpg)',
-        backgroundSize: 'cover',
-        backgroundPosition: 'center',
-        padding: '6rem 2rem',
-        color: '#fff'
-      }}>
+      <section className="hero-section">
         {/* Dark overlay */}
         <div style={{
           position: 'absolute',
@@ -47,8 +40,8 @@ export default async function Home() {
         }} />
         
         <div className="container" style={{ position: 'relative', zIndex: 1 }}>
-          <h1 style={{ fontSize: '3rem', fontWeight: 800, marginBottom: '0.5rem' }}>Welcome.</h1>
-          <h2 style={{ fontSize: '2rem', fontWeight: 600, marginBottom: '3rem' }}>
+          <h1 className="hero-title">Welcome.</h1>
+          <h2 className="hero-subtitle">
             Millions of movies, TV shows and people to discover. Explore now.
           </h2>
           

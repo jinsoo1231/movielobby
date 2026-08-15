@@ -125,12 +125,12 @@ export default async function MovieDetail({
               <div>
                 {movie.genres.map((g: string) => <span key={g} className="tag">{g}</span>)}
               </div>
-              <div className="detail-meta-row">
+              <div style={{ display: 'flex', gap: '1.5rem', color: 'var(--text-muted)', marginBottom: '1.5rem', fontSize: '0.95rem' }}>
                 <span style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}><Star size={16} color="var(--accent-pink)" /> {movie.rating}</span>
                 <span style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}><Clock size={16} /> {movie.runtime}</span>
                 <span style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}><Calendar size={16} /> {movie.releaseDate}</span>
               </div>
-              <div className="detail-meta-text">
+              <div style={{ display: 'flex', gap: '1rem', color: 'var(--text-muted)', fontSize: '0.95rem' }}>
                 <p><strong>감독:</strong> {movie.director}</p>
                 <p><strong>출연:</strong> {movie.cast.join(", ")}</p>
               </div>
@@ -147,7 +147,7 @@ export default async function MovieDetail({
 
         {/* Media Section */}
         <h2 className="section-title"><Play size={24} color="var(--primary)" /> 트레일러 & 미디어</h2>
-        <div className="media-grid">
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1.5rem', marginBottom: '2rem' }}>
           <div className="glass" style={{ borderRadius: '12px', overflow: 'hidden', aspectRatio: '16/9', display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#000' }}>
             {movie.trailerId ? (
               <iframe 

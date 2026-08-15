@@ -371,3 +371,115 @@ h1, h2, h3, h4, h5, h6 {
 .modal-close:hover {
   color: white;
 }
+/* Responsive Styles */
+@media (max-width: 768px) {
+  /* Hero Section */
+  .hero-section {
+    padding: 3rem 1.5rem !important;
+  }
+  .hero-title {
+    font-size: 2rem !important;
+  }
+  .hero-subtitle {
+    font-size: 1.25rem !important;
+    margin-bottom: 2rem !important;
+  }
+
+  /* Movie Grid */
+  .movie-grid {
+    grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)) !important;
+    gap: 1rem !important;
+  }
+
+  /* Detail Banner & Content */
+  .detail-banner {
+    min-height: auto !important;
+    padding-top: 4rem;
+  }
+  .detail-content {
+    flex-direction: column;
+    align-items: center;
+    gap: 1rem;
+    padding-bottom: 1rem;
+  }
+  .detail-poster {
+    width: 150px !important;
+    margin-bottom: 1rem;
+  }
+  .detail-info {
+    text-align: center;
+    width: 100%;
+  }
+  .detail-title {
+    font-size: 2rem !important;
+  }
+  .detail-meta-row {
+    flex-direction: column;
+    align-items: center !important;
+    gap: 0.5rem !important;
+  }
+  .detail-meta-text {
+    flex-direction: column;
+    gap: 0.5rem !important;
+    text-align: center;
+  }
+
+  /* Trailer & Media */
+  .media-grid {
+    grid-template-columns: 1fr !important;
+  }
+
+  /* Review Input Group */
+  .review-input-group {
+    flex-direction: column !important;
+    align-items: stretch !important;
+  }
+  .review-submit-btn {
+    width: 100% !important;
+    padding: 1rem;
+  }
+}
+
+/* Utility classes to replace inline styles */
+.hero-section {
+  position: relative;
+  background-image: url(https://image.tmdb.org/t/p/original/6XjMwQOqQihe7X495oYtKCH20Hw.jpg);
+  background-size: cover;
+  background-position: center;
+  padding: 6rem 2rem;
+  color: #fff;
+}
+.hero-title {
+  font-size: 3rem;
+  font-weight: 800;
+  margin-bottom: 0.5rem;
+}
+.hero-subtitle {
+  font-size: 2rem;
+  font-weight: 600;
+  margin-bottom: 3rem;
+}
+.detail-meta-row {
+  display: flex;
+  gap: 1.5rem;
+  color: var(--text-muted);
+  margin-bottom: 1.5rem;
+  font-size: 0.95rem;
+}
+.detail-meta-text {
+  display: flex;
+  gap: 1rem;
+  color: var(--text-muted);
+  font-size: 0.95rem;
+}
+.media-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1.5rem;
+  margin-bottom: 2rem;
+}
+.review-input-group {
+  display: flex;
+  gap: 0.8rem;
+  align-items: stretch;
+}
