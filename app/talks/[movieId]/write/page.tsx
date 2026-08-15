@@ -21,12 +21,14 @@ export default function TalkWritePage({
   const [author, setAuthor] = useState("");
   const [title, setTitle] = useState("");
   const [content, setContent] = useState("");
+  const [isSpoiler, setIsSpoiler] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState("");
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const handleSubmit = async (e?: React.FormEvent | React.MouseEvent) => {
+    if (e) e.preventDefault();
     if (!author.trim() || !title.trim() || !content.trim()) {
+      alert("닉네임, 제목, 내용을 모두 입력해주세요.");
       setError("닉네임, 제목, 내용을 모두 입력해주세요.");
       return;
     }
@@ -34,26 +36,34 @@ export default function TalkWritePage({
     setIsSubmitting(true);
     setError("");
 
-    const { error: insertError } = await supabase
-      .from('talk_posts')
-      .insert([
-        { 
-          movie_id: movieId, 
-          movie_title: movieTitle, 
-          author: author.trim(), 
-          title: title.trim(), 
-          content: content.trim() 
-        }
-      ]);
+    try {
+      const { error: insertError } = await supabase
+        .from('talk_posts')
+        .insert([
+          { 
+            movie_id: movieId, 
+            movie_title: movieTitle, 
+            author: author.trim(), 
+            title: title.trim(), 
+            content: content.trim(),
+            is_spoiler: isSpoiler
+          }
+        ]);
 
-    setIsSubmitting(false);
-
-    if (insertError) {
-      console.error(insertError);
-      setError("글 등록 중 오류가 발생했습니다. 다시 시도해주세요.");
-    } else {
-      router.push(`/talks/${movieId}?title=${encodeURIComponent(movieTitle)}&poster=${encodeURIComponent(moviePoster)}`);
-      router.refresh(); // Refresh the list
+      if (insertError) {
+        console.error("Supabase Insert Error:", insertError);
+        alert(`에러: ${insertError.message}`);
+        setError(`글 등록 중 오류가 발생했습니다: ${insertError.message || JSON.stringify(insertError)}`);
+        setIsSubmitting(false);
+      } else {
+        alert("게시글이 성공적으로 등록되었습니다! 게시판으로 이동합니다.");
+        window.location.href = `/talks/${movieId}?title=${encodeURIComponent(movieTitle)}&poster=${encodeURIComponent(moviePoster)}`;
+      }
+    } catch (err: any) {
+      console.error("Unexpected Error:", err);
+      alert(`시스템 에러: ${err.message}`);
+      setError(`예기치 못한 시스템 오류가 발생했습니다: ${err.message || '알 수 없는 오류'}`);
+      setIsSubmitting(false);
     }
   };
 
@@ -80,7 +90,7 @@ export default function TalkWritePage({
           </div>
         )}
 
-        <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
           
           <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
             <label style={{ fontWeight: 'bold', color: 'var(--text-muted)' }}>작성자 닉네임</label>
@@ -90,13 +100,14 @@ export default function TalkWritePage({
               onChange={(e) => setAuthor(e.target.value)}
               placeholder="게시판에서 사용할 닉네임을 입력하세요"
               style={{
-                background: 'rgba(0,0,0,0.3)',
+                background: '#f9fafb',
                 border: '1px solid var(--card-border)',
                 padding: '1rem',
                 borderRadius: '8px',
-                color: '#fff',
+                color: 'var(--foreground)',
                 fontSize: '1rem',
-                outline: 'none'
+                outline: 'none',
+                width: '100%'
               }}
               disabled={isSubmitting}
             />
@@ -110,13 +121,14 @@ export default function TalkWritePage({
               onChange={(e) => setTitle(e.target.value)}
               placeholder="토론할 주제나 글의 제목을 적어주세요"
               style={{
-                background: 'rgba(0,0,0,0.3)',
+                background: '#f9fafb',
                 border: '1px solid var(--card-border)',
                 padding: '1rem',
                 borderRadius: '8px',
-                color: '#fff',
+                color: 'var(--foreground)',
                 fontSize: '1rem',
-                outline: 'none'
+                outline: 'none',
+                width: '100%'
               }}
               disabled={isSubmitting}
             />
@@ -129,23 +141,39 @@ export default function TalkWritePage({
               onChange={(e) => setContent(e.target.value)}
               placeholder="자유롭게 영화에 대한 감상이나 의견을 남겨주세요."
               style={{
-                background: 'rgba(0,0,0,0.3)',
+                background: '#f9fafb',
                 border: '1px solid var(--card-border)',
                 padding: '1rem',
                 borderRadius: '8px',
-                color: '#fff',
+                color: 'var(--foreground)',
                 fontSize: '1rem',
                 minHeight: '200px',
                 resize: 'vertical',
-                outline: 'none'
+                outline: 'none',
+                width: '100%'
               }}
               disabled={isSubmitting}
             />
           </div>
 
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', padding: '0.5rem 0' }}>
+            <input 
+              type="checkbox" 
+              id="spoiler" 
+              checked={isSpoiler} 
+              onChange={(e) => setIsSpoiler(e.target.checked)}
+              style={{ width: '18px', height: '18px', cursor: 'pointer', accentColor: 'var(--accent-pink)' }}
+              disabled={isSubmitting}
+            />
+            <label htmlFor="spoiler" style={{ color: 'var(--accent-pink)', fontWeight: 'bold', cursor: 'pointer' }}>
+              🚨 스포일러가 포함된 글입니다 (체크 시 글 목록과 본문에서 내용이 보호됩니다)
+            </label>
+          </div>
+
           <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: '1rem' }}>
             <button 
-              type="submit" 
+              type="button" 
+              onClick={handleSubmit}
               className="btn-primary" 
               style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', padding: '1rem 2.5rem', fontSize: '1.1rem', opacity: isSubmitting ? 0.7 : 1, cursor: isSubmitting ? 'not-allowed' : 'pointer', border: 'none' }}
               disabled={isSubmitting}
@@ -154,7 +182,7 @@ export default function TalkWritePage({
             </button>
           </div>
 
-        </form>
+        </div>
       </div>
     </div>
   );

@@ -24,6 +24,7 @@ export default function TalkPostDetailPage({
   const [commentAuthor, setCommentAuthor] = useState("");
   const [commentContent, setCommentContent] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [showSpoiler, setShowSpoiler] = useState(false);
 
   useEffect(() => {
     fetchPostAndComments();
@@ -107,7 +108,14 @@ export default function TalkPostDetailPage({
 
       {/* Post Content */}
       <div className="glass" style={{ padding: '2.5rem', borderRadius: '16px', marginBottom: '2rem' }}>
-        <h1 style={{ fontSize: '2rem', margin: '0 0 1rem 0' }}>{post.title}</h1>
+        <h1 style={{ fontSize: '2rem', margin: '0 0 1rem 0', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+          {post.is_spoiler && (
+            <span style={{ background: 'rgba(255, 0, 0, 0.2)', color: '#ff6b6b', fontSize: '1rem', padding: '4px 10px', borderRadius: '6px', border: '1px solid #ff6b6b', flexShrink: 0 }}>
+              스포일러
+            </span>
+          )}
+          {post.title}
+        </h1>
         
         <div style={{ display: 'flex', flexWrap: 'wrap', gap: '1.5rem', color: 'var(--text-muted)', fontSize: '0.95rem', paddingBottom: '1.5rem', borderBottom: '1px solid rgba(255,255,255,0.1)', marginBottom: '2rem' }}>
           <span style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}><User size={16} /> {post.author}</span>
@@ -116,7 +124,23 @@ export default function TalkPostDetailPage({
         </div>
 
         <div style={{ fontSize: '1.1rem', lineHeight: '1.8', whiteSpace: 'pre-wrap', color: '#e0e0e0', minHeight: '150px' }}>
-          {post.content}
+          {post.is_spoiler && !showSpoiler ? (
+            <div style={{ position: 'relative', minHeight: '200px', background: 'rgba(0,0,0,0.2)', borderRadius: '8px', overflow: 'hidden' }}>
+              <div style={{ filter: 'blur(8px)', userSelect: 'none', opacity: 0.3, padding: '1.5rem', height: '200px' }}>
+                {post.content.length > 200 ? post.content.substring(0, 200) + '...' : post.content}
+              </div>
+              <div style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                <button 
+                  onClick={() => setShowSpoiler(true)} 
+                  style={{ background: 'var(--accent-pink)', color: 'white', border: 'none', padding: '0.8rem 1.5rem', borderRadius: '30px', fontWeight: 'bold', cursor: 'pointer', fontSize: '1rem', display: 'flex', alignItems: 'center', gap: '0.5rem', boxShadow: '0 4px 10px rgba(0,0,0,0.5)' }}
+                >
+                  🚨 스포일러 포함된 글입니다 (클릭해서 보기)
+                </button>
+              </div>
+            </div>
+          ) : (
+            post.content
+          )}
         </div>
 
         {/* Voting Buttons */}

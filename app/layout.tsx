@@ -21,7 +21,7 @@ export default function RootLayout({
   return (
     <html lang="ko">
       <body className={`${inter.variable} ${outfit.variable}`}>
-        <header className="header" style={{ background: 'var(--primary)', color: '#fff' }}>
+        <header className="header" style={{ backgroundColor: '#032541', color: '#fff' }}>
           <div className="container" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', height: '64px' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '2rem' }}>
               <Link href="/" className="logo" style={{ color: '#fff', display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '1.5rem', fontWeight: 'bold' }}>

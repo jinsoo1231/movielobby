@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { Suspense } from "react";
 import { MessageSquare, Flame, ArrowLeft, Clock, ThumbsUp, Eye, Edit3, Film } from "lucide-react";
 import { supabase } from "@/lib/supabaseClient";
 
@@ -11,20 +12,23 @@ export default async function MovieTalkBoard({
   searchParams,
 }: { 
   params: { movieId: string };
-  searchParams: { title?: string; poster?: string; type?: string; q?: string };
+  searchParams: { title?: string; poster?: string; type?: string; q?: string; page?: string };
 }) {
   const movieId = parseInt(params.movieId);
   const movieTitle = searchParams.title || "영화";
   const moviePoster = searchParams.poster || "https://via.placeholder.com/150x225/19191E/FFFFFF?text=No+Poster";
   const searchType = searchParams.type || "title";
   const query = searchParams.q || "";
+  const currentPage = parseInt(searchParams.page || "1");
+  const postsPerPage = 15;
+  const offset = (currentPage - 1) * postsPerPage;
 
   // Fetch Best Posts (Top 3 by likes) - Only show when not searching
   let bestPosts: any[] = [];
   if (!query) {
     const { data } = await supabase
       .from('talk_posts')
-      .select('id, title, author, views, likes, created_at')
+      .select('id, title, author, views, likes, created_at, is_spoiler')
       .eq('movie_id', movieId)
       .order('likes', { ascending: false })
       .limit(3);
@@ -34,7 +38,7 @@ export default async function MovieTalkBoard({
   // Fetch All Posts
   let allQuery = supabase
     .from('talk_posts')
-    .select('id, title, author, views, likes, created_at')
+    .select('id, title, author, views, likes, created_at, is_spoiler', { count: 'exact' })
     .eq('movie_id', movieId);
 
   if (query) {
@@ -49,7 +53,11 @@ export default async function MovieTalkBoard({
     }
   }
 
-  const { data: allPosts } = await allQuery.order('created_at', { ascending: false });
+  const { data: allPosts, count } = await allQuery
+    .order('created_at', { ascending: false })
+    .range(offset, offset + postsPerPage - 1);
+
+  const totalPages = count ? Math.ceil(count / postsPerPage) : 1;
 
   // All posts should include everything, even best posts, so we don't filter them out.
   const regularPosts = allPosts || [];
@@ -127,8 +135,13 @@ export default async function MovieTalkBoard({
                 <div style={{ display: 'flex', justifyContent: 'center' }}>
                   <span style={{ border: '1px solid var(--accent-pink)', color: 'var(--accent-pink)', padding: '2px 8px', borderRadius: '4px', fontSize: '0.8rem', fontWeight: 'bold' }}>추천</span>
                 </div>
-                <div style={{ textAlign: 'left', paddingLeft: '1rem', fontWeight: 'bold', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-                  {post.title}
+                <div style={{ textAlign: 'left', paddingLeft: '1rem', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                    {post.is_spoiler && (
+                      <span style={{ background: 'rgba(255, 0, 0, 0.2)', color: '#ff6b6b', fontSize: '0.7rem', padding: '2px 6px', borderRadius: '4px', border: '1px solid #ff6b6b', flexShrink: 0 }}>스포일러</span>
+                    )}
+                    <span style={{ fontWeight: 'bold', overflow: 'hidden', textOverflow: 'ellipsis' }}>{post.title}</span>
+                  </div>
                 </div>
                 <div style={{ textAlign: 'center', color: '#ccc' }}>{post.author}</div>
                 <div style={{ textAlign: 'center', color: 'var(--text-muted)', fontSize: '0.9rem' }}>{formatDate(post.created_at)}</div>
@@ -158,10 +171,15 @@ export default async function MovieTalkBoard({
                 }}
               >
                 <div style={{ textAlign: 'center', color: 'var(--text-muted)', fontSize: '0.9rem' }}>
-                  {regularPosts.length - index}
+                  {(count || 0) - offset - index}
                 </div>
                 <div style={{ textAlign: 'left', paddingLeft: '1rem', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-                  {post.title}
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                    {post.is_spoiler && (
+                      <span style={{ background: 'rgba(255, 0, 0, 0.2)', color: '#ff6b6b', fontSize: '0.7rem', padding: '2px 6px', borderRadius: '4px', border: '1px solid #ff6b6b', flexShrink: 0 }}>스포일러</span>
+                    )}
+                    <span style={{ overflow: 'hidden', textOverflow: 'ellipsis' }}>{post.title}</span>
+                  </div>
                 </div>
                 <div style={{ textAlign: 'center', color: '#ccc' }}>{post.author}</div>
                 <div style={{ textAlign: 'center', color: 'var(--text-muted)', fontSize: '0.9rem' }}>{formatDate(post.created_at)}</div>
@@ -179,8 +197,38 @@ export default async function MovieTalkBoard({
 
       </div>
 
+      {/* Pagination */}
+      {totalPages > 1 && (
+        <div style={{ display: 'flex', justifyContent: 'center', gap: '0.5rem', marginTop: '2rem' }}>
+          {Array.from({ length: totalPages }, (_, i) => i + 1).map((pageNum) => (
+            <Link
+              key={pageNum}
+              href={`/talks/${movieId}?title=${encodeURIComponent(movieTitle)}&poster=${encodeURIComponent(moviePoster)}${query ? `&type=${searchType}&q=${encodeURIComponent(query)}` : ''}&page=${pageNum}`}
+              style={{
+                width: '36px',
+                height: '36px',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                borderRadius: '50%',
+                background: pageNum === currentPage ? 'var(--primary)' : '#f1f5f9',
+                color: pageNum === currentPage ? '#fff' : 'var(--foreground)',
+                textDecoration: 'none',
+                fontWeight: pageNum === currentPage ? 'bold' : 'normal',
+                transition: 'background 0.2s'
+              }}
+              className="hover-bg-primary"
+            >
+              {pageNum}
+            </Link>
+          ))}
+        </div>
+      )}
+
       {/* Search Bar at the bottom */}
-      <BoardSearch movieId={movieId} movieTitle={movieTitle} moviePoster={moviePoster} />
+      <Suspense fallback={<div style={{ textAlign: 'center', padding: '2rem', color: 'var(--text-muted)' }}>검색 로딩 중...</div>}>
+        <BoardSearch movieId={movieId} movieTitle={movieTitle} moviePoster={moviePoster} />
+      </Suspense>
     </div>
   );
 }

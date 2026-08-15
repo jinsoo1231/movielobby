@@ -34,7 +34,7 @@ export default async function TalksMainPage() {
   // Fetch recent posts across all movies
   const { data } = await supabase
     .from('talk_posts')
-    .select('id, movie_id, movie_title, title, author, views, likes, created_at')
+    .select('id, movie_id, movie_title, title, author, views, likes, created_at, is_spoiler')
     .order('created_at', { ascending: false })
     .limit(20);
   const recentPosts = (data as any[]) || [];
@@ -150,7 +150,12 @@ export default async function TalksMainPage() {
                       }}>
                         {post.movie_title || "영화"}
                       </span>
-                      <span style={{ overflow: 'hidden', textOverflow: 'ellipsis' }}>{post.title}</span>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', overflow: 'hidden' }}>
+                        {post.is_spoiler && (
+                          <span style={{ background: 'rgba(255, 0, 0, 0.2)', color: '#ff6b6b', fontSize: '0.7rem', padding: '2px 6px', borderRadius: '4px', border: '1px solid #ff6b6b', flexShrink: 0 }}>스포일러</span>
+                        )}
+                        <span style={{ overflow: 'hidden', textOverflow: 'ellipsis' }}>{post.title}</span>
+                      </div>
                     </div>
                     <div style={{ textAlign: 'center', color: '#ccc' }}>{post.author}</div>
                     <div style={{ textAlign: 'center', color: 'var(--text-muted)', fontSize: '0.9rem' }}>{formatDate(post.created_at)}</div>
