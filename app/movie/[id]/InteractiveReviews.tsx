@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { MessageSquare, Star, StarHalf, ThumbsUp, ThumbsDown } from "lucide-react";
+import { supabase } from "@/lib/supabaseClient";
 
 export default function InteractiveReviews({ initialReviews, movieId }: { initialReviews: any[], movieId: number }) {
   const [reviews, setReviews] = useState<any[]>([]);
@@ -11,12 +12,33 @@ export default function InteractiveReviews({ initialReviews, movieId }: { initia
   const [nickname, setNickname] = useState("");
 
   useEffect(() => {
-    const saved = localStorage.getItem(`reviews_${movieId}`);
-    if (saved) {
-      setReviews([...JSON.parse(saved), ...initialReviews]);
-    } else {
-      setReviews(initialReviews);
+    async function fetchReviews() {
+      // Supabase에서 해당 영화의 리뷰 목록을 조회합니다.
+      const { data, error } = await supabase
+        .from('reviews')
+        .select('*')
+        .eq('movie_id', movieId)
+        .order('created_at', { ascending: false });
+
+      if (error) {
+        console.error("Error fetching reviews:", error);
+        setReviews(initialReviews);
+      } else {
+        const dbReviews = data.map((r: any) => ({
+          id: r.id,
+          author: r.author,
+          text: r.text,
+          rating: r.rating,
+          platform: "MovieLobby",
+          isLocal: true, // 로컬 리뷰로 간주하여 추천/비추천 활성화
+          date: new Date(r.created_at).toLocaleDateString('ko-KR', { year: 'numeric', month: '2-digit', day: '2-digit' }),
+          likes: r.likes,
+          dislikes: r.dislikes
+        }));
+        setReviews([...dbReviews, ...initialReviews]);
+      }
     }
+    fetchReviews();
   }, [initialReviews, movieId]);
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -35,58 +57,77 @@ export default function InteractiveReviews({ initialReviews, movieId }: { initia
     }
 
     const newReview = {
-      id: Date.now(),
+      movie_id: movieId,
       author: finalAuthor,
       text,
       rating,
-      platform: "MovieLobby",
-      isLocal: true,
-      date: new Date().toLocaleDateString('ko-KR', { year: 'numeric', month: '2-digit', day: '2-digit' }),
       likes: 0,
       dislikes: 0
     };
 
-    const saved = localStorage.getItem(`reviews_${movieId}`);
-    const localReviews = saved ? JSON.parse(saved) : [];
-    const updatedLocal = [newReview, ...localReviews];
+    // Supabase에 새로운 리뷰를 저장합니다.
+    const insertReview = async () => {
+      const { data, error } = await supabase
+        .from('reviews')
+        .insert([newReview])
+        .select();
+
+      if (error) {
+        console.error("Error inserting review:", error);
+        alert("리뷰 등록에 실패했습니다.");
+        return;
+      }
+
+      if (data && data[0]) {
+        const dbReview = {
+          id: data[0].id,
+          author: data[0].author,
+          text: data[0].text,
+          rating: data[0].rating,
+          platform: "MovieLobby",
+          isLocal: true,
+          date: new Date(data[0].created_at).toLocaleDateString('ko-KR', { year: 'numeric', month: '2-digit', day: '2-digit' }),
+          likes: data[0].likes,
+          dislikes: data[0].dislikes
+        };
+        setReviews(prev => [dbReview, ...prev]);
+      }
+    };
     
-    localStorage.setItem(`reviews_${movieId}`, JSON.stringify(updatedLocal));
-    
-    setReviews([newReview, ...reviews]);
+    insertReview();
     setText("");
     setRating(0);
     setHoverRating(0);
   };
 
-  const handleVote = (reviewId: number, type: 'like' | 'dislike') => {
-    const updatedReviews = reviews.map(review => {
-      if (review.id === reviewId && review.isLocal) {
+  const handleVote = async (reviewId: any, type: 'like' | 'dislike') => {
+    const review = reviews.find(r => r.id === reviewId);
+    if (!review || !review.isLocal) return; // Supabase 저장된 리뷰만 업데이트 (isLocal = true)
+
+    const newLikes = type === 'like' ? (review.likes || 0) + 1 : (review.likes || 0);
+    const newDislikes = type === 'dislike' ? (review.dislikes || 0) + 1 : (review.dislikes || 0);
+
+    const updatedReviews = reviews.map(r => {
+      if (r.id === reviewId) {
         return {
-          ...review,
-          likes: type === 'like' ? (review.likes || 0) + 1 : (review.likes || 0),
-          dislikes: type === 'dislike' ? (review.dislikes || 0) + 1 : (review.dislikes || 0)
+          ...r,
+          likes: newLikes,
+          dislikes: newDislikes
         };
       }
-      return review;
+      return r;
     });
 
     setReviews(updatedReviews);
 
-    // Update localStorage for local reviews
-    const saved = localStorage.getItem(`reviews_${movieId}`);
-    if (saved) {
-      const localReviews = JSON.parse(saved);
-      const updatedLocal = localReviews.map((r: any) => {
-        if (r.id === reviewId) {
-          return {
-            ...r,
-            likes: type === 'like' ? (r.likes || 0) + 1 : (r.likes || 0),
-            dislikes: type === 'dislike' ? (r.dislikes || 0) + 1 : (r.dislikes || 0)
-          };
-        }
-        return r;
-      });
-      localStorage.setItem(`reviews_${movieId}`, JSON.stringify(updatedLocal));
+    // Supabase에 추천/비추천 카운트를 업데이트합니다.
+    const { error } = await supabase
+      .from('reviews')
+      .update({ likes: newLikes, dislikes: newDislikes })
+      .eq('id', reviewId);
+
+    if (error) {
+      console.error("Error updating vote:", error);
     }
   };
 
