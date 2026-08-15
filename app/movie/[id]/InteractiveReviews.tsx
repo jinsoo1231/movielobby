@@ -227,24 +227,35 @@ export default function InteractiveReviews({ initialReviews, movieId }: { initia
               />
             </div>
             <div className="review-input-group">
-              <textarea
-                value={text}
-                onChange={(e) => setText(e.target.value)}
-                placeholder="감상평을 작성해주세요."
-                style={{
-                  flex: 1,
-                  minHeight: '80px',
-                  padding: '1rem',
-                  borderRadius: '8px',
-                  border: '1px solid var(--card-border)',
-                  background: 'rgba(0,0,0,0.3)',
-                  color: 'var(--foreground)',
-                  fontSize: '1rem',
-                  resize: 'none',
-                  outline: 'none',
-                  lineHeight: '1.5'
-                }}
-              />
+              <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+                <textarea
+                  value={text}
+                  onChange={(e) => setText(e.target.value)}
+                  placeholder="감상평을 작성해주세요."
+                  maxLength={200}
+                  style={{
+                    width: '100%',
+                    minHeight: '80px',
+                    padding: '1rem',
+                    borderRadius: '8px',
+                    border: '1px solid var(--card-border)',
+                    background: 'rgba(0,0,0,0.3)',
+                    color: 'var(--foreground)',
+                    fontSize: '1rem',
+                    resize: 'none',
+                    outline: 'none',
+                    lineHeight: '1.5'
+                  }}
+                />
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                  <span style={{ fontSize: '0.8rem', color: text.length >= 200 ? 'var(--danger)' : 'var(--text-muted)' }}>
+                    {text.length} / 200자
+                  </span>
+                  <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>
+                    💡 긴 감상평이나 스포일러는 상단의 <strong>Talks 참여하기</strong> 버튼을 이용해주세요!
+                  </span>
+                </div>
+              </div>
               <button 
                 type="submit"
                 className="review-submit-btn"

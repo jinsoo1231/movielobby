@@ -93,12 +93,16 @@ export default function TalkWritePage({
         <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
           
           <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
-            <label style={{ fontWeight: 'bold', color: 'var(--text-muted)' }}>작성자 닉네임</label>
+            <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+              <label style={{ fontWeight: 'bold', color: 'var(--text-muted)' }}>작성자 닉네임</label>
+              <span style={{ fontSize: '0.8rem', color: author.length >= 15 ? 'var(--danger)' : 'var(--text-muted)' }}>{author.length} / 15자</span>
+            </div>
             <input 
               type="text" 
               value={author}
               onChange={(e) => setAuthor(e.target.value)}
               placeholder="게시판에서 사용할 닉네임을 입력하세요"
+              maxLength={15}
               style={{
                 background: '#f9fafb',
                 border: '1px solid var(--card-border)',
@@ -114,12 +118,16 @@ export default function TalkWritePage({
           </div>
 
           <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
-            <label style={{ fontWeight: 'bold', color: 'var(--text-muted)' }}>글 제목</label>
+            <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+              <label style={{ fontWeight: 'bold', color: 'var(--text-muted)' }}>글 제목</label>
+              <span style={{ fontSize: '0.8rem', color: title.length >= 50 ? 'var(--danger)' : 'var(--text-muted)' }}>{title.length} / 50자</span>
+            </div>
             <input 
               type="text" 
               value={title}
               onChange={(e) => setTitle(e.target.value)}
               placeholder="토론할 주제나 글의 제목을 적어주세요"
+              maxLength={50}
               style={{
                 background: '#f9fafb',
                 border: '1px solid var(--card-border)',
@@ -135,11 +143,15 @@ export default function TalkWritePage({
           </div>
 
           <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
-            <label style={{ fontWeight: 'bold', color: 'var(--text-muted)' }}>본문 내용</label>
+            <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+              <label style={{ fontWeight: 'bold', color: 'var(--text-muted)' }}>본문 내용</label>
+              <span style={{ fontSize: '0.8rem', color: content.length >= 2000 ? 'var(--danger)' : 'var(--text-muted)' }}>{content.length} / 2000자</span>
+            </div>
             <textarea 
               value={content}
               onChange={(e) => setContent(e.target.value)}
               placeholder="자유롭게 영화에 대한 감상이나 의견을 남겨주세요."
+              maxLength={2000}
               style={{
                 background: '#f9fafb',
                 border: '1px solid var(--card-border)',
