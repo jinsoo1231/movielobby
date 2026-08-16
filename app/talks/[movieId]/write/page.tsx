@@ -1,10 +1,10 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { ArrowLeft, Save } from "lucide-react";
-import { supabase } from "@/lib/supabaseClient";
+import { createClient } from "@/lib/supabase/client";
 
 export default function TalkWritePage({ 
   params,
@@ -18,18 +18,33 @@ export default function TalkWritePage({
   const movieTitle = searchParams.title || "영화";
   const moviePoster = searchParams.poster || "https://via.placeholder.com/150x225/19191E/FFFFFF?text=No+Poster";
 
-  const [author, setAuthor] = useState("");
+  const [userNickname, setUserNickname] = useState("");
   const [title, setTitle] = useState("");
   const [content, setContent] = useState("");
   const [isSpoiler, setIsSpoiler] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState("");
+  const supabase = createClient();
+
+  useEffect(() => {
+    const checkAuth = async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) {
+        alert("로그인 후 글을 작성할 수 있습니다.");
+        router.push("/login");
+      } else {
+        const nickname = user.user_metadata?.nickname || user.email?.split('@')[0] || "User";
+        setUserNickname(nickname);
+      }
+    };
+    checkAuth();
+  }, [router, supabase.auth]);
 
   const handleSubmit = async (e?: React.FormEvent | React.MouseEvent) => {
     if (e) e.preventDefault();
-    if (!author.trim() || !title.trim() || !content.trim()) {
-      alert("닉네임, 제목, 내용을 모두 입력해주세요.");
-      setError("닉네임, 제목, 내용을 모두 입력해주세요.");
+    if (!title.trim() || !content.trim()) {
+      alert("제목과 내용을 모두 입력해주세요.");
+      setError("제목과 내용을 모두 입력해주세요.");
       return;
     }
 
@@ -43,7 +58,7 @@ export default function TalkWritePage({
           { 
             movie_id: movieId, 
             movie_title: movieTitle, 
-            author: author.trim(), 
+            author: userNickname, 
             title: title.trim(), 
             content: content.trim(),
             is_spoiler: isSpoiler
@@ -92,30 +107,7 @@ export default function TalkWritePage({
 
         <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
           
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-              <label style={{ fontWeight: 'bold', color: 'var(--text-muted)' }}>작성자 닉네임</label>
-              <span style={{ fontSize: '0.8rem', color: author.length >= 15 ? 'var(--danger)' : 'var(--text-muted)' }}>{author.length} / 15자</span>
-            </div>
-            <input 
-              type="text" 
-              value={author}
-              onChange={(e) => setAuthor(e.target.value)}
-              placeholder="게시판에서 사용할 닉네임을 입력하세요"
-              maxLength={15}
-              style={{
-                background: '#f9fafb',
-                border: '1px solid var(--card-border)',
-                padding: '1rem',
-                borderRadius: '8px',
-                color: 'var(--foreground)',
-                fontSize: '1rem',
-                outline: 'none',
-                width: '100%'
-              }}
-              disabled={isSubmitting}
-            />
-          </div>
+          {/* 닉네임 입력 제거, 제목 입력란부터 시작 */}
 
           <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between' }}>

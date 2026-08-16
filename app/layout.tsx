@@ -4,6 +4,7 @@ import "./globals.css";
 import Link from "next/link";
 import { Film } from "lucide-react";
 import SearchForm from "./SearchForm";
+import HeaderAuth from "./HeaderAuth";
 
 const inter = Inter({ subsets: ["latin"], variable: "--font-inter" });
 const outfit = Outfit({ subsets: ["latin"], variable: "--font-outfit" });
@@ -35,6 +36,7 @@ export default function RootLayout({
             </div>
             <div style={{ display: 'flex', alignItems: 'center', gap: '1.5rem' }}>
               <SearchForm />
+              <HeaderAuth />
             </div>
           </div>
         </header>

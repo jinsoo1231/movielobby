@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { ArrowLeft, User, Clock, Eye, ThumbsUp, ThumbsDown, MessageSquare, Send } from "lucide-react";
-import { supabase } from "@/lib/supabaseClient";
+import { createClient } from "@/lib/supabase/client";
 
 export default function TalkPostDetailPage({ 
   params,
@@ -21,14 +21,25 @@ export default function TalkPostDetailPage({
   const [comments, setComments] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   
-  const [commentAuthor, setCommentAuthor] = useState("");
+  const [currentUser, setCurrentUser] = useState<any>(null);
+  const [userNickname, setUserNickname] = useState("");
+  
   const [commentContent, setCommentContent] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showSpoiler, setShowSpoiler] = useState(false);
+  const supabase = createClient();
 
   useEffect(() => {
-    fetchPostAndComments();
-  }, [postId]);
+    const init = async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (user) {
+        setCurrentUser(user);
+        setUserNickname(user.user_metadata?.nickname || user.email?.split('@')[0] || "User");
+      }
+      await fetchPostAndComments();
+    };
+    init();
+  }, [postId, supabase.auth]);
 
   const fetchPostAndComments = async () => {
     // 1. Fetch Post
@@ -75,12 +86,16 @@ export default function TalkPostDetailPage({
 
   const handleCommentSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!commentAuthor.trim() || !commentContent.trim()) return;
+    if (!currentUser) {
+      alert("로그인 후 댓글을 작성할 수 있습니다.");
+      return;
+    }
+    if (!commentContent.trim()) return;
 
     setIsSubmitting(true);
     const { data, error } = await supabase
       .from('talk_comments')
-      .insert([{ post_id: postId, author: commentAuthor.trim(), content: commentContent.trim() }])
+      .insert([{ post_id: postId, author: userNickname, content: commentContent.trim() }])
       .select();
 
     if (!error && data) {
@@ -168,29 +183,30 @@ export default function TalkPostDetailPage({
         </h2>
 
         {/* Comment Form */}
-        <form onSubmit={handleCommentSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '1rem', marginBottom: '3rem', background: 'rgba(0,0,0,0.2)', padding: '1.5rem', borderRadius: '12px' }}>
-          <div style={{ display: 'flex', gap: '1rem' }}>
-            <input 
-              type="text" 
-              placeholder="닉네임" 
-              value={commentAuthor}
-              onChange={(e) => setCommentAuthor(e.target.value)}
-              style={{ padding: '0.8rem', borderRadius: '8px', border: '1px solid var(--card-border)', background: 'rgba(0,0,0,0.3)', color: '#fff', outline: 'none', width: '150px' }}
-              disabled={isSubmitting}
-            />
-            <input 
-              type="text" 
-              placeholder="자유롭게 댓글을 남겨보세요!" 
-              value={commentContent}
-              onChange={(e) => setCommentContent(e.target.value)}
-              style={{ flex: 1, padding: '0.8rem', borderRadius: '8px', border: '1px solid var(--card-border)', background: 'rgba(0,0,0,0.3)', color: '#fff', outline: 'none' }}
-              disabled={isSubmitting}
-            />
-            <button type="submit" className="btn-primary" style={{ padding: '0 1.5rem', borderRadius: '8px', display: 'flex', alignItems: 'center', gap: '0.5rem', border: 'none', cursor: isSubmitting ? 'not-allowed' : 'pointer', opacity: isSubmitting ? 0.7 : 1 }} disabled={isSubmitting}>
-              <Send size={18} /> 등록
-            </button>
+        {currentUser ? (
+          <form onSubmit={handleCommentSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '1rem', marginBottom: '3rem', background: 'rgba(0,0,0,0.2)', padding: '1.5rem', borderRadius: '12px' }}>
+            <div style={{ display: 'flex', gap: '1rem' }}>
+              <div style={{ padding: '0.8rem', borderRadius: '8px', border: '1px solid var(--card-border)', background: 'rgba(255,255,255,0.05)', color: 'var(--text-muted)', width: '150px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                {userNickname}
+              </div>
+              <input 
+                type="text" 
+                placeholder="자유롭게 댓글을 남겨보세요!" 
+                value={commentContent}
+                onChange={(e) => setCommentContent(e.target.value)}
+                style={{ flex: 1, padding: '0.8rem', borderRadius: '8px', border: '1px solid var(--card-border)', background: 'rgba(0,0,0,0.3)', color: '#fff', outline: 'none' }}
+                disabled={isSubmitting}
+              />
+              <button type="submit" className="btn-primary" style={{ padding: '0 1.5rem', borderRadius: '8px', display: 'flex', alignItems: 'center', gap: '0.5rem', border: 'none', cursor: isSubmitting ? 'not-allowed' : 'pointer', opacity: isSubmitting ? 0.7 : 1 }} disabled={isSubmitting}>
+                <Send size={18} /> 등록
+              </button>
+            </div>
+          </form>
+        ) : (
+          <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', marginBottom: '3rem', background: 'rgba(0,0,0,0.2)', padding: '2rem', borderRadius: '12px' }}>
+            <span style={{ color: 'var(--text-muted)' }}>댓글을 작성하려면 <Link href="/login" style={{ color: 'var(--accent-pink)', textDecoration: 'none', fontWeight: 'bold' }}>로그인</Link>이 필요합니다.</span>
           </div>
-        </form>
+        )}
 
         {/* Comments List */}
         <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
