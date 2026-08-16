@@ -34,14 +34,14 @@ export default function LoginPage() {
   };
 
   const handleOAuthLogin = async (provider: 'google' | 'kakao') => {
-    // 카카오 로그인 시 개인 개발자 권한에 맞춰 이메일 제외 닉네임/프로필만 요청 (KOE205 에러 방지)
-    const scopes = provider === 'kakao' ? 'profile_nickname profile_image' : undefined;
-
+    // 소셜 로그인 시 자동 로그인 대신 항상 계정 선택/확인 및 다른 계정 로그인 화면을 띄우도록 설정
     const { error } = await supabase.auth.signInWithOAuth({
       provider,
       options: {
         redirectTo: `${window.location.origin}/auth/callback`,
-        scopes,
+        queryParams: {
+          prompt: 'select_account',
+        },
       },
     });
 
@@ -117,7 +117,7 @@ export default function LoginPage() {
         </div>
 
         <div style={{ textAlign: 'center', marginTop: '2rem', fontSize: '0.95rem', color: 'var(--text-muted)' }}>
-          계정이 없으신가요? <Link href="/signup" style={{ color: 'var(--accent-pink)', textDecoration: 'none', fontWeight: 600 }}>회원가입</Link>
+          계정이 없으신가요? <Link href="/signup" style={{ color: '#0ea5e9', textDecoration: 'none', fontWeight: 600 }}>회원가입</Link>
         </div>
       </div>
     </div>

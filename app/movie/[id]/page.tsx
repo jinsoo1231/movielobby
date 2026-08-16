@@ -140,7 +140,7 @@ export default async function MovieDetail({
                 {movie.genres.map((g: string) => <span key={g} className="tag">{g}</span>)}
               </div>
               <div className="detail-meta-row">
-                <span style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}><Star size={16} color="var(--accent-pink)" /> {movie.rating}</span>
+                <span style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}><Star size={16} color="#ef4444" fill="#ef4444" /> {movie.rating}</span>
                 <span style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}><Clock size={16} /> {movie.runtime}</span>
                 <span style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}><Calendar size={16} /> {movie.releaseDate}</span>
               </div>

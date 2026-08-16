@@ -118,7 +118,7 @@ export default function SignupPage() {
         </form>
 
         <div style={{ textAlign: 'center', marginTop: '2rem', fontSize: '0.95rem', color: 'var(--text-muted)' }}>
-          이미 계정이 있으신가요? <Link href="/login" style={{ color: 'var(--accent-pink)', textDecoration: 'none', fontWeight: 600 }}>로그인</Link>
+          이미 계정이 있으신가요? <Link href="/login" style={{ color: '#0ea5e9', textDecoration: 'none', fontWeight: 600 }}>로그인</Link>
         </div>
       </div>
     </div>

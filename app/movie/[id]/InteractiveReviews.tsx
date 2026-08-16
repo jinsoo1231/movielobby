@@ -1,8 +1,8 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { MessageSquare, Star, StarHalf, ThumbsUp, ThumbsDown } from "lucide-react";
-import { supabase } from "@/lib/supabaseClient";
+import { MessageSquare, Star, StarHalf, ThumbsUp, ThumbsDown, UserCheck } from "lucide-react";
+import { createClient } from "@/lib/supabase/client";
 
 export default function InteractiveReviews({ initialReviews, movieId }: { initialReviews: any[], movieId: number }) {
   const [reviews, setReviews] = useState<any[]>([]);
@@ -13,18 +13,24 @@ export default function InteractiveReviews({ initialReviews, movieId }: { initia
 
   const [currentUser, setCurrentUser] = useState<any>(null);
   const [userVotes, setUserVotes] = useState<Record<string, 'like' | 'dislike'>>({});
+  
+  // Next.js App Router 쿠키 기반 Supabase 브라우저 클라이언트 생성
+  const supabase = createClient();
 
   useEffect(() => {
-    // 현재 로그인된 유저 및 기존 투표 이력 조회
+    // 현재 로그인된 유저 세션 및 기존 투표 이력 조회 (쿠키 기반 Auth)
     async function checkAuthAndVotes() {
       const { data: { user } } = await supabase.auth.getUser();
       if (user) {
         setCurrentUser(user);
-        if (user.user_metadata?.nickname) {
-          setNickname(user.user_metadata.nickname);
+        
+        // 유저 닉네임 우선순위: 1) metadata.nickname, 2) metadata.name (소셜 계정명), 3) 이메일 앞자리
+        const displayName = user.user_metadata?.nickname || user.user_metadata?.name || user.email?.split('@')[0] || "";
+        if (displayName) {
+          setNickname(displayName);
         }
 
-        // 로그인 유저의 리뷰 투표 기록 조회
+        // 로그인 유저의 리뷰 투표 기록 조회 (vote_logs 테이블)
         const { data: votes } = await supabase
           .from('vote_logs')
           .select('target_id, vote_type')
@@ -215,21 +221,21 @@ export default function InteractiveReviews({ initialReviews, movieId }: { initia
           // Full star
           if (currentVal >= value2) {
              return (
-               <div key={index} style={{ position: 'relative', width: '32px', height: '32px' }}>
-                 <Star size={32} fill="var(--accent-pink)" color="var(--accent-pink)" style={{ position: 'absolute', top: 0, left: 0 }} />
-                 <div style={{ position: 'absolute', top: 0, left: 0, width: '50%', height: '100%', cursor: 'pointer', zIndex: 10 }} onMouseEnter={() => setHoverRating(value1)} onMouseLeave={() => setHoverRating(0)} onClick={() => setRating(value1)} />
-                 <div style={{ position: 'absolute', top: 0, left: '50%', width: '50%', height: '100%', cursor: 'pointer', zIndex: 10 }} onMouseEnter={() => setHoverRating(value2)} onMouseLeave={() => setHoverRating(0)} onClick={() => setRating(value2)} />
-               </div>
+                <div key={index} style={{ position: 'relative', width: '32px', height: '32px' }}>
+                  <Star size={32} fill="#ef4444" color="#ef4444" style={{ position: 'absolute', top: 0, left: 0 }} />
+                  <div style={{ position: 'absolute', top: 0, left: 0, width: '50%', height: '100%', cursor: 'pointer', zIndex: 10 }} onMouseEnter={() => setHoverRating(value1)} onMouseLeave={() => setHoverRating(0)} onClick={() => setRating(value1)} />
+                  <div style={{ position: 'absolute', top: 0, left: '50%', width: '50%', height: '100%', cursor: 'pointer', zIndex: 10 }} onMouseEnter={() => setHoverRating(value2)} onMouseLeave={() => setHoverRating(0)} onClick={() => setRating(value2)} />
+                </div>
              );
           } 
           // Half star
           else if (currentVal === value1) {
              return (
-               <div key={index} style={{ position: 'relative', width: '32px', height: '32px' }}>
-                 <StarHalf size={32} fill="var(--accent-pink)" color="var(--accent-pink)" style={{ position: 'absolute', top: 0, left: 0 }} />
-                 <div style={{ position: 'absolute', top: 0, left: 0, width: '50%', height: '100%', cursor: 'pointer', zIndex: 10 }} onMouseEnter={() => setHoverRating(value1)} onMouseLeave={() => setHoverRating(0)} onClick={() => setRating(value1)} />
-                 <div style={{ position: 'absolute', top: 0, left: '50%', width: '50%', height: '100%', cursor: 'pointer', zIndex: 10 }} onMouseEnter={() => setHoverRating(value2)} onMouseLeave={() => setHoverRating(0)} onClick={() => setRating(value2)} />
-               </div>
+                <div key={index} style={{ position: 'relative', width: '32px', height: '32px' }}>
+                  <StarHalf size={32} fill="#ef4444" color="#ef4444" style={{ position: 'absolute', top: 0, left: 0 }} />
+                  <div style={{ position: 'absolute', top: 0, left: 0, width: '50%', height: '100%', cursor: 'pointer', zIndex: 10 }} onMouseEnter={() => setHoverRating(value1)} onMouseLeave={() => setHoverRating(0)} onClick={() => setRating(value1)} />
+                  <div style={{ position: 'absolute', top: 0, left: '50%', width: '50%', height: '100%', cursor: 'pointer', zIndex: 10 }} onMouseEnter={() => setHoverRating(value2)} onMouseLeave={() => setHoverRating(0)} onClick={() => setRating(value2)} />
+                </div>
              );
           }
           // Empty star
@@ -251,8 +257,8 @@ export default function InteractiveReviews({ initialReviews, movieId }: { initia
     const emptyStars = 5 - fullStars - (hasHalfStar ? 1 : 0);
     return (
       <div style={{ display: 'flex', gap: '2px', alignItems: 'center' }}>
-        {[...Array(fullStars)].map((_, i) => <Star key={`f-${i}`} size={16} fill="var(--accent-pink)" color="var(--accent-pink)" />)}
-        {hasHalfStar && <StarHalf key="h" size={16} fill="var(--accent-pink)" color="var(--accent-pink)" />}
+        {[...Array(fullStars)].map((_, i) => <Star key={`f-${i}`} size={16} fill="#ef4444" color="#ef4444" />)}
+        {hasHalfStar && <StarHalf key="h" size={16} fill="#ef4444" color="#ef4444" />}
         {[...Array(emptyStars)].map((_, i) => <Star key={`e-${i}`} size={16} color="var(--card-border)" />)}
         <span style={{ marginLeft: '6px', fontWeight: 'bold', fontSize: '1.1rem', color: 'var(--foreground)' }}>{score}</span>
       </div>
@@ -271,30 +277,37 @@ export default function InteractiveReviews({ initialReviews, movieId }: { initia
           {/* Interactive Star Rating */}
           <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '0.5rem', marginBottom: '1rem' }}>
             {renderInteractiveStars()}
-            <span style={{ color: 'var(--accent-pink)', fontWeight: 'bold', fontSize: '1.1rem', minHeight: '1.5rem' }}>
+            <span style={{ color: '#ef4444', fontWeight: 'bold', fontSize: '1.1rem', minHeight: '1.5rem' }}>
               {rating > 0 ? `${rating}점` : ""}
             </span>
           </div>
           
           <div style={{ width: '100%', position: 'relative' }}>
-            <div style={{ display: 'flex', justifyContent: 'flex-start', marginBottom: '0.5rem' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.5rem' }}>
               <input 
                  type="text" 
                  value={nickname} 
                  onChange={e => setNickname(e.target.value)}
                  placeholder="User Name"
                  maxLength={20}
+                 readOnly={!!currentUser}
                  style={{
                    padding: '0.6rem 1rem',
                    borderRadius: '6px',
                    border: '1px solid var(--card-border)',
-                   background: 'rgba(0,0,0,0.3)',
+                   background: currentUser ? 'rgba(99, 102, 241, 0.1)' : 'rgba(0,0,0,0.3)',
                    color: 'var(--foreground)',
                    outline: 'none',
                    width: '200px',
-                   fontSize: '0.9rem'
+                   fontSize: '0.9rem',
+                   cursor: currentUser ? 'default' : 'text'
                  }}
               />
+              {currentUser && (
+                <span style={{ display: 'inline-flex', alignItems: 'center', gap: '4px', fontSize: '0.8rem', color: 'var(--primary)', fontWeight: 600 }}>
+                  <UserCheck size={16} /> 로그인됨
+                </span>
+              )}
             </div>
             <div className="review-input-group">
               <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
@@ -387,15 +400,15 @@ export default function InteractiveReviews({ initialReviews, movieId }: { initia
                     onClick={() => handleVote(review.id, 'like')}
                     style={{ 
                       display: 'flex', alignItems: 'center', gap: '0.4rem', 
-                      background: userVotes[String(review.id)] === 'like' ? 'rgba(236, 72, 153, 0.1)' : 'transparent', 
-                      border: userVotes[String(review.id)] === 'like' ? '1px solid var(--accent-pink)' : '1px solid var(--card-border)', 
+                      background: userVotes[String(review.id)] === 'like' ? 'rgba(14, 165, 233, 0.1)' : 'transparent', 
+                      border: userVotes[String(review.id)] === 'like' ? '1px solid #0ea5e9' : '1px solid var(--card-border)', 
                       borderRadius: '20px', padding: '4px 12px', 
-                      color: userVotes[String(review.id)] === 'like' ? 'var(--accent-pink)' : 'var(--text-muted)', 
+                      color: userVotes[String(review.id)] === 'like' ? '#0ea5e9' : 'var(--text-muted)', 
                       cursor: 'pointer', fontSize: '0.85rem',
                       fontWeight: userVotes[String(review.id)] === 'like' ? 'bold' : 'normal',
                       transition: 'all 0.2s'
                     }}
-                    onMouseEnter={(e) => { if (userVotes[String(review.id)] !== 'like') e.currentTarget.style.color = 'var(--accent-pink)'; }}
+                    onMouseEnter={(e) => { if (userVotes[String(review.id)] !== 'like') e.currentTarget.style.color = '#0ea5e9'; }}
                     onMouseLeave={(e) => { if (userVotes[String(review.id)] !== 'like') e.currentTarget.style.color = 'var(--text-muted)'; }}
                   >
                     <ThumbsUp size={14} /> {review.likes || 0}

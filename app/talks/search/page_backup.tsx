@@ -37,7 +37,7 @@ export default async function TalksSearchPage({
         <TalksSearchForm />
       </div>
       
-      <h2 style={{ fontSize: '1.5rem', fontWeight: 600, marginBottom: '1.5rem', borderBottom: '1px solid var(--card-border)', paddingBottom: '0.5rem' }}>
+      <h2 style={{ fontSize: '1.5rem', fontWeight: 600, marginBottom: '1.5rem', borderBottom: '1px solid var(--card-border)', paddingBottom: '0.5rem', color: 'var(--accent-pink)' }}>
         "{q}" 검색 결과
       </h2>
       

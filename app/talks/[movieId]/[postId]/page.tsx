@@ -197,7 +197,7 @@ export default function TalkPostDetailPage({
               <div style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                 <button 
                   onClick={() => setShowSpoiler(true)} 
-                  style={{ background: 'var(--accent-pink)', color: 'white', border: 'none', padding: '0.8rem 1.5rem', borderRadius: '30px', fontWeight: 'bold', cursor: 'pointer', fontSize: '1rem', display: 'flex', alignItems: 'center', gap: '0.5rem', boxShadow: '0 4px 10px rgba(0,0,0,0.5)' }}
+                  style={{ background: '#ef4444', color: 'white', border: 'none', padding: '0.8rem 1.5rem', borderRadius: '30px', fontWeight: 'bold', cursor: 'pointer', fontSize: '1rem', display: 'flex', alignItems: 'center', gap: '0.5rem', boxShadow: '0 4px 10px rgba(0,0,0,0.5)' }}
                 >
                   🚨 스포일러 포함된 글입니다 (클릭해서 보기)
                 </button>
@@ -215,7 +215,7 @@ export default function TalkPostDetailPage({
             style={{ 
               display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '0.5rem', 
               background: 'none', border: 'none', 
-              color: userVote === 'like' ? 'var(--accent-pink)' : 'var(--text-muted)', 
+              color: userVote === 'like' ? '#0ea5e9' : 'var(--text-muted)', 
               cursor: 'pointer', transition: 'transform 0.2s' 
             }} 
             onMouseEnter={e => e.currentTarget.style.transform = 'scale(1.1)'} 
@@ -223,8 +223,8 @@ export default function TalkPostDetailPage({
           >
             <div style={{ 
               padding: '1rem', borderRadius: '50%', 
-              border: `2px solid ${userVote === 'like' ? 'var(--accent-pink)' : 'var(--card-border)'}`,
-              background: userVote === 'like' ? 'rgba(236, 72, 153, 0.15)' : 'transparent'
+              border: `2px solid ${userVote === 'like' ? '#0ea5e9' : 'var(--card-border)'}`,
+              background: userVote === 'like' ? 'rgba(14, 165, 233, 0.15)' : 'transparent'
             }}>
               <ThumbsUp size={24} />
             </div>
@@ -282,7 +282,7 @@ export default function TalkPostDetailPage({
           </form>
         ) : (
           <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', marginBottom: '3rem', background: 'rgba(0,0,0,0.2)', padding: '2rem', borderRadius: '12px' }}>
-            <span style={{ color: 'var(--text-muted)' }}>댓글을 작성하려면 <Link href="/login" style={{ color: 'var(--accent-pink)', textDecoration: 'none', fontWeight: 'bold' }}>로그인</Link>이 필요합니다.</span>
+            <span style={{ color: 'var(--text-muted)' }}>댓글을 작성하려면 <Link href="/login" style={{ color: '#0ea5e9', textDecoration: 'none', fontWeight: 'bold' }}>로그인</Link>이 필요합니다.</span>
           </div>
         )}
 

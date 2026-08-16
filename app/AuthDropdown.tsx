@@ -20,21 +20,65 @@ export default function AuthDropdown({ user }: { user: any }) {
   };
 
   return (
-    <div style={{ position: 'relative' }}>
+    <div style={{ position: 'relative', flexShrink: 0 }}>
       <button 
         onClick={() => setIsOpen(!isOpen)}
-        style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', background: 'transparent', border: '1px solid rgba(255,255,255,0.2)', color: '#fff', padding: '0.5rem 1rem', borderRadius: '30px', cursor: 'pointer', fontWeight: 600 }}
+        style={{ 
+          display: 'inline-flex', 
+          alignItems: 'center', 
+          gap: '0.5rem', 
+          background: 'rgba(255, 255, 255, 0.1)', 
+          border: '1px solid rgba(255, 255, 255, 0.25)', 
+          color: '#ffffff', 
+          padding: '0.45rem 1rem', 
+          borderRadius: '20px', 
+          cursor: 'pointer', 
+          fontWeight: 600,
+          fontSize: '0.9rem',
+          whiteSpace: 'nowrap',
+          flexShrink: 0,
+          transition: 'all 0.2s ease'
+        }}
       >
-        <User size={18} />
-        {displayName}
+        <User size={16} />
+        <span style={{ 
+          maxWidth: '120px', 
+          overflow: 'hidden', 
+          textOverflow: 'ellipsis', 
+          whiteSpace: 'nowrap',
+          display: 'inline-block'
+        }}>
+          {displayName}
+        </span>
       </button>
 
       {isOpen && (
-        <div style={{ position: 'absolute', top: 'calc(100% + 10px)', right: 0, background: '#19191E', border: '1px solid var(--card-border)', borderRadius: '12px', padding: '0.5rem', width: '180px', boxShadow: '0 10px 30px rgba(0,0,0,0.5)', zIndex: 100 }}>
+        <div style={{ 
+          position: 'absolute', 
+          top: 'calc(100% + 8px)', 
+          right: 0, 
+          background: '#0a2342', 
+          border: '1px solid rgba(255, 255, 255, 0.15)', 
+          borderRadius: '12px', 
+          padding: '0.5rem', 
+          width: '170px', 
+          boxShadow: '0 10px 25px rgba(0,0,0,0.4)', 
+          zIndex: 100 
+        }}>
           <Link 
             href="/mypage" 
             onClick={() => setIsOpen(false)}
-            style={{ display: 'block', padding: '0.8rem 1rem', color: '#fff', textDecoration: 'none', borderRadius: '8px', marginBottom: '4px', transition: 'background 0.2s' }}
+            style={{ 
+              display: 'block', 
+              padding: '0.65rem 0.9rem', 
+              color: '#ffffff', 
+              textDecoration: 'none', 
+              borderRadius: '8px', 
+              marginBottom: '2px', 
+              fontSize: '0.9rem',
+              fontWeight: 500,
+              transition: 'background 0.2s' 
+            }}
             onMouseEnter={e => e.currentTarget.style.background = 'rgba(255,255,255,0.1)'}
             onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
           >
@@ -42,11 +86,26 @@ export default function AuthDropdown({ user }: { user: any }) {
           </Link>
           <button 
             onClick={handleLogout}
-            style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', width: '100%', padding: '0.8rem 1rem', color: '#ff6b6b', background: 'transparent', border: 'none', borderRadius: '8px', cursor: 'pointer', textAlign: 'left', fontSize: '1rem', transition: 'background 0.2s' }}
-            onMouseEnter={e => e.currentTarget.style.background = 'rgba(255,0,0,0.1)'}
+            style={{ 
+              display: 'flex', 
+              alignItems: 'center', 
+              gap: '0.5rem', 
+              width: '100%', 
+              padding: '0.65rem 0.9rem', 
+              color: '#ff6b6b', 
+              background: 'transparent', 
+              border: 'none', 
+              borderRadius: '8px', 
+              cursor: 'pointer', 
+              textAlign: 'left', 
+              fontSize: '0.9rem',
+              fontWeight: 500,
+              transition: 'background 0.2s' 
+            }}
+            onMouseEnter={e => e.currentTarget.style.background = 'rgba(255,0,0,0.12)'}
             onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
           >
-            <LogOut size={16} /> 로그아웃
+            <LogOut size={15} /> 로그아웃
           </button>
         </div>
       )}

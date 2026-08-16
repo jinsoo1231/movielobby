@@ -11,7 +11,25 @@ export default async function HeaderAuth() {
   }
 
   return (
-    <Link href="/login" style={{ color: '#fff', textDecoration: 'none', fontWeight: 600, padding: '0.5rem 1rem', background: 'var(--accent-pink)', borderRadius: '8px' }}>
+    <Link 
+      href="/login" 
+      style={{ 
+        color: '#ffffff', 
+        textDecoration: 'none', 
+        fontWeight: 600, 
+        fontSize: '0.9rem',
+        padding: '0.45rem 1.1rem', 
+        background: 'rgba(255, 255, 255, 0.12)', 
+        border: '1px solid rgba(255, 255, 255, 0.25)', 
+        borderRadius: '20px',
+        display: 'inline-flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        whiteSpace: 'nowrap',
+        flexShrink: 0,
+        transition: 'all 0.2s ease'
+      }}
+    >
       로그인
     </Link>
   );

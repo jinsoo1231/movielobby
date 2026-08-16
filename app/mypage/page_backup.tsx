@@ -69,7 +69,7 @@ export default function MyPage() {
       {/* My Posts */}
       <div className="glass" style={{ padding: '2rem', borderRadius: '16px' }}>
         <h3 style={{ fontSize: '1.3rem', margin: '0 0 1.5rem 0', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-          <MessageSquare size={20} color="#0ea5e9" /> 내가 작성한 게시글
+          <MessageSquare size={20} color="var(--accent-pink)" /> 내가 작성한 게시글
         </h3>
         
         <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>

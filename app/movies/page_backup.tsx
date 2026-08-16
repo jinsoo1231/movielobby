@@ -119,7 +119,7 @@ export default async function Home({
                   <div className="info-overlay">
                     <div className="movie-title">{movie.title}</div>
                     <div className="movie-meta">
-                      <Star size={14} fill="#ef4444" color="#ef4444" />
+                      <Star size={14} fill="var(--accent-pink)" color="var(--accent-pink)" />
                       {movie.vote_average ? movie.vote_average.toFixed(1) : "0.0"}
                     </div>
                   </div>

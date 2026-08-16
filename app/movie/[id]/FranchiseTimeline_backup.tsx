@@ -31,7 +31,7 @@ export default function FranchiseTimeline({ franchise }: { franchise: any[] }) {
               <img src={modalData.poster} alt={modalData.title} style={{ width: '120px', borderRadius: '8px' }} />
               <div>
                 <h3 style={{ fontSize: '1.5rem', marginBottom: '0.5rem' }}>{modalData.title} <span style={{ fontSize: '1rem', color: 'var(--text-muted)' }}>({modalData.year})</span></h3>
-                <div style={{ color: '#ef4444', marginBottom: '1rem', fontWeight: 'bold' }}>★ {modalData.rating}</div>
+                <div style={{ color: 'var(--accent-pink)', marginBottom: '1rem', fontWeight: 'bold' }}>★ {modalData.rating}</div>
                 <p style={{ color: 'var(--text-muted)', fontSize: '0.95rem', lineHeight: '1.5' }}>{modalData.plot || "줄거리가 제공되지 않습니다."}</p>
               </div>
             </div>

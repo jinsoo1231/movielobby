@@ -129,11 +129,11 @@ export default async function MovieTalkBoard({
                   alignItems: 'center',
                   textDecoration: 'none', 
                   color: 'inherit',
-                  background: 'rgba(14, 165, 233, 0.05)'
+                  background: 'rgba(236, 72, 153, 0.05)' // subtle pink tint
                 }}
               >
                 <div style={{ display: 'flex', justifyContent: 'center' }}>
-                  <span style={{ border: '1px solid #0ea5e9', color: '#0ea5e9', padding: '2px 8px', borderRadius: '4px', fontSize: '0.8rem', fontWeight: 'bold' }}>추천</span>
+                  <span style={{ border: '1px solid var(--accent-pink)', color: 'var(--accent-pink)', padding: '2px 8px', borderRadius: '4px', fontSize: '0.8rem', fontWeight: 'bold' }}>추천</span>
                 </div>
                 <div style={{ textAlign: 'left', paddingLeft: '1rem', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
@@ -146,7 +146,7 @@ export default async function MovieTalkBoard({
                 <div style={{ textAlign: 'center', color: '#ccc' }}>{post.author}</div>
                 <div style={{ textAlign: 'center', color: 'var(--text-muted)', fontSize: '0.9rem' }}>{formatDate(post.created_at)}</div>
                 <div style={{ textAlign: 'center', color: 'var(--text-muted)', fontSize: '0.9rem' }}>{post.views}</div>
-                <div style={{ textAlign: 'center', color: '#0ea5e9', fontSize: '0.9rem', fontWeight: 'bold' }}>{post.likes}</div>
+                <div style={{ textAlign: 'center', color: 'var(--accent-pink)', fontSize: '0.9rem', fontWeight: 'bold' }}>{post.likes}</div>
               </Link>
             ))}
           </div>

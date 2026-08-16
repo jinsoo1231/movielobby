@@ -81,7 +81,7 @@ export default function SignupPage() {
               value={nickname}
               onChange={e => setNickname(e.target.value)}
               required
-              style={{ width: '100%', padding: '1rem 1rem 1rem 3rem', background: 'rgba(255,255,255,0.05)', border: '1px solid var(--card-border)', borderRadius: '8px', color: '#fff', fontSize: '1rem', outline: 'none' }}
+              style={{ width: '100%', padding: '1rem 1rem 1rem 3rem', background: '#f8fafc', border: '1px solid var(--card-border)', borderRadius: '8px', color: 'var(--foreground)', fontSize: '1rem', outline: 'none' }}
               disabled={loading}
             />
           </div>
@@ -94,7 +94,7 @@ export default function SignupPage() {
               value={email}
               onChange={e => setEmail(e.target.value)}
               required
-              style={{ width: '100%', padding: '1rem 1rem 1rem 3rem', background: 'rgba(255,255,255,0.05)', border: '1px solid var(--card-border)', borderRadius: '8px', color: '#fff', fontSize: '1rem', outline: 'none' }}
+              style={{ width: '100%', padding: '1rem 1rem 1rem 3rem', background: '#f8fafc', border: '1px solid var(--card-border)', borderRadius: '8px', color: 'var(--foreground)', fontSize: '1rem', outline: 'none' }}
               disabled={loading}
             />
           </div>
@@ -107,7 +107,7 @@ export default function SignupPage() {
               onChange={e => setPassword(e.target.value)}
               required
               minLength={6}
-              style={{ width: '100%', padding: '1rem 1rem 1rem 3rem', background: 'rgba(255,255,255,0.05)', border: '1px solid var(--card-border)', borderRadius: '8px', color: '#fff', fontSize: '1rem', outline: 'none' }}
+              style={{ width: '100%', padding: '1rem 1rem 1rem 3rem', background: '#f8fafc', border: '1px solid var(--card-border)', borderRadius: '8px', color: 'var(--foreground)', fontSize: '1rem', outline: 'none' }}
               disabled={loading}
             />
           </div>

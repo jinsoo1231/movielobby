@@ -34,10 +34,14 @@ export default function LoginPage() {
   };
 
   const handleOAuthLogin = async (provider: 'google' | 'kakao') => {
+    // 카카오 로그인 시 개인 개발자 권한에 맞춰 이메일 제외 닉네임/프로필만 요청 (KOE205 에러 방지)
+    const scopes = provider === 'kakao' ? 'profile_nickname profile_image' : undefined;
+
     const { error } = await supabase.auth.signInWithOAuth({
       provider,
       options: {
         redirectTo: `${window.location.origin}/auth/callback`,
+        scopes,
       },
     });
 

@@ -5,8 +5,8 @@
   --primary-hover: #011424;
   --card-bg: #ffffff;
   --card-border: #e3e3e3;
-  --accent-pink: #ec4899;
   --accent-blue: #01b4e4;
+  --accent-cyan: #0ea5e9;
   --success: #10b981;
   --danger: #ef4444;
   --text-muted: #666666;
@@ -70,10 +70,7 @@ h1, h2, h3, h4, h5, h6 {
 .logo {
   font-size: 1.5rem;
   font-weight: 800;
-  background: linear-gradient(to right, var(--primary), var(--accent-pink));
-  -webkit-background-clip: text;
-  background-clip: text;
-  color: transparent;
+  color: #ffffff;
   display: flex;
   align-items: center;
   gap: 0.5rem;

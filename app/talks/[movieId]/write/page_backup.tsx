@@ -166,10 +166,10 @@ export default function TalkWritePage({
               id="spoiler" 
               checked={isSpoiler} 
               onChange={(e) => setIsSpoiler(e.target.checked)}
-              style={{ width: '18px', height: '18px', cursor: 'pointer', accentColor: '#ef4444' }}
+              style={{ width: '18px', height: '18px', cursor: 'pointer', accentColor: 'var(--accent-pink)' }}
               disabled={isSubmitting}
             />
-            <label htmlFor="spoiler" style={{ color: '#ef4444', fontWeight: 'bold', cursor: 'pointer' }}>
+            <label htmlFor="spoiler" style={{ color: 'var(--accent-pink)', fontWeight: 'bold', cursor: 'pointer' }}>
               🚨 스포일러가 포함된 글입니다 (체크 시 글 목록과 본문에서 내용이 보호됩니다)
             </label>
           </div>

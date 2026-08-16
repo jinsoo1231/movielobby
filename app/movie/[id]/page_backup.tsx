@@ -121,16 +121,30 @@ export default async function MovieDetail({
           <div className="detail-content">
             <img src={movie.poster} alt={movie.title} className="detail-poster" />
             <div className="detail-info">
-              <h1 className="detail-title">{movie.title}</h1>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '1.5rem', flexWrap: 'wrap' }}>
+                <h1 className="detail-title" style={{ margin: 0 }}>{movie.title}</h1>
+                <Link 
+                  href={`/talks/${movie.id}?title=${encodeURIComponent(movie.title)}&poster=${encodeURIComponent(movie.poster)}`} 
+                  style={{ 
+                    display: 'inline-flex', alignItems: 'center', gap: '0.4rem', 
+                    padding: '0.5rem 1rem', borderRadius: '20px', 
+                    background: 'var(--primary)', color: '#fff', 
+                    fontWeight: 'bold', fontSize: '0.95rem', textDecoration: 'none',
+                    boxShadow: '0 4px 12px rgba(1, 180, 228, 0.4)'
+                  }}
+                >
+                  <MessageSquare size={16} /> Talks 참여하기
+                </Link>
+              </div>
               <div>
                 {movie.genres.map((g: string) => <span key={g} className="tag">{g}</span>)}
               </div>
-              <div style={{ display: 'flex', gap: '1.5rem', color: 'var(--text-muted)', marginBottom: '1.5rem', fontSize: '0.95rem' }}>
+              <div className="detail-meta-row">
                 <span style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}><Star size={16} color="var(--accent-pink)" /> {movie.rating}</span>
                 <span style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}><Clock size={16} /> {movie.runtime}</span>
                 <span style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}><Calendar size={16} /> {movie.releaseDate}</span>
               </div>
-              <div style={{ display: 'flex', gap: '1rem', color: 'var(--text-muted)', fontSize: '0.95rem' }}>
+              <div className="detail-meta-text">
                 <p><strong>감독:</strong> {movie.director}</p>
                 <p><strong>출연:</strong> {movie.cast.join(", ")}</p>
               </div>
@@ -147,7 +161,7 @@ export default async function MovieDetail({
 
         {/* Media Section */}
         <h2 className="section-title"><Play size={24} color="var(--primary)" /> 트레일러 & 미디어</h2>
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1.5rem', marginBottom: '2rem' }}>
+        <div className="media-grid">
           <div className="glass" style={{ borderRadius: '12px', overflow: 'hidden', aspectRatio: '16/9', display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#000' }}>
             {movie.trailerId ? (
               <iframe 
