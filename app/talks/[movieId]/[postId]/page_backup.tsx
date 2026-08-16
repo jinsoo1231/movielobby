@@ -23,7 +23,6 @@ export default function TalkPostDetailPage({
   
   const [currentUser, setCurrentUser] = useState<any>(null);
   const [userNickname, setUserNickname] = useState("");
-  const [userVote, setUserVote] = useState<'like' | 'dislike' | null>(null);
   
   const [commentContent, setCommentContent] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -36,19 +35,6 @@ export default function TalkPostDetailPage({
       if (user) {
         setCurrentUser(user);
         setUserNickname(user.user_metadata?.nickname || user.email?.split('@')[0] || "User");
-
-        // 로그인 유저의 게시글 투표 이력 조회
-        const { data: voteData } = await supabase
-          .from('vote_logs')
-          .select('vote_type')
-          .eq('user_id', user.id)
-          .eq('target_type', 'post')
-          .eq('target_id', postId)
-          .maybeSingle();
-
-        if (voteData) {
-          setUserVote(voteData.vote_type as 'like' | 'dislike');
-        }
       }
       await fetchPostAndComments();
     };
@@ -84,54 +70,18 @@ export default function TalkPostDetailPage({
     setLoading(false);
   };
 
-  // 사용자 1인 1회 추천/비추천 투표 처리 함수
-  const handleVote = async (type: 'like' | 'dislike') => {
+  const handleLike = async () => {
     if (!post) return;
+    const newLikes = (post.likes || 0) + 1;
+    await supabase.from('talk_posts').update({ likes: newLikes }).eq('id', postId);
+    setPost({ ...post, likes: newLikes });
+  };
 
-    // 1. 로그인 여부 확인
-    if (!currentUser) {
-      alert("추천/비추천은 로그인 후 이용하실 수 있습니다.");
-      return;
-    }
-
-    // 2. 이미 투표한 이력이 있는지 확인
-    if (userVote) {
-      alert("이미 참여하신 게시글입니다. (1인 1회만 참여 가능)");
-      return;
-    }
-
-    // 3. vote_logs 테이블에 중복 방지 기록 저장 시도
-    const { error: logError } = await supabase
-      .from('vote_logs')
-      .insert([{
-        user_id: currentUser.id,
-        target_type: 'post',
-        target_id: postId,
-        vote_type: type
-      }]);
-
-    if (logError) {
-      if (logError.code === '23505') {
-        alert("이미 참여하신 게시글입니다.");
-      } else {
-        console.error("Vote logging error:", logError);
-        alert("추천/비추천 처리에 실패했습니다. (DB 설정을 확인해주세요)");
-      }
-      return;
-    }
-
-    // 4. 로컬 상태 및 DB 카운트 업데이트
-    setUserVote(type);
-
-    if (type === 'like') {
-      const newLikes = (post.likes || 0) + 1;
-      await supabase.from('talk_posts').update({ likes: newLikes }).eq('id', postId);
-      setPost({ ...post, likes: newLikes });
-    } else {
-      const newDislikes = (post.dislikes || 0) + 1;
-      await supabase.from('talk_posts').update({ dislikes: newDislikes }).eq('id', postId);
-      setPost({ ...post, dislikes: newDislikes });
-    }
+  const handleDislike = async () => {
+    if (!post) return;
+    const newDislikes = (post.dislikes || 0) + 1;
+    await supabase.from('talk_posts').update({ dislikes: newDislikes }).eq('id', postId);
+    setPost({ ...post, dislikes: newDislikes });
   };
 
   const handleCommentSubmit = async (e: React.FormEvent) => {
@@ -210,43 +160,15 @@ export default function TalkPostDetailPage({
 
         {/* Voting Buttons */}
         <div style={{ display: 'flex', justifyContent: 'center', gap: '2rem', marginTop: '3rem', paddingTop: '2rem', borderTop: '1px solid rgba(255,255,255,0.1)' }}>
-          <button 
-            onClick={() => handleVote('like')} 
-            style={{ 
-              display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '0.5rem', 
-              background: 'none', border: 'none', 
-              color: userVote === 'like' ? 'var(--accent-pink)' : 'var(--text-muted)', 
-              cursor: 'pointer', transition: 'transform 0.2s' 
-            }} 
-            onMouseEnter={e => e.currentTarget.style.transform = 'scale(1.1)'} 
-            onMouseLeave={e => e.currentTarget.style.transform = 'scale(1)'}
-          >
-            <div style={{ 
-              padding: '1rem', borderRadius: '50%', 
-              border: `2px solid ${userVote === 'like' ? 'var(--accent-pink)' : 'var(--card-border)'}`,
-              background: userVote === 'like' ? 'rgba(236, 72, 153, 0.15)' : 'transparent'
-            }}>
+          <button onClick={handleLike} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '0.5rem', background: 'none', border: 'none', color: 'var(--accent-pink)', cursor: 'pointer', transition: 'transform 0.2s' }} onMouseEnter={e => e.currentTarget.style.transform = 'scale(1.1)'} onMouseLeave={e => e.currentTarget.style.transform = 'scale(1)'}>
+            <div style={{ padding: '1rem', borderRadius: '50%', border: '2px solid var(--accent-pink)' }}>
               <ThumbsUp size={24} />
             </div>
             <span style={{ fontWeight: 'bold', fontSize: '1.1rem' }}>{post.likes || 0}</span>
           </button>
 
-          <button 
-            onClick={() => handleVote('dislike')} 
-            style={{ 
-              display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '0.5rem', 
-              background: 'none', border: 'none', 
-              color: userVote === 'dislike' ? 'var(--danger)' : 'var(--text-muted)', 
-              cursor: 'pointer', transition: 'transform 0.2s' 
-            }} 
-            onMouseEnter={e => e.currentTarget.style.transform = 'scale(1.1)'} 
-            onMouseLeave={e => e.currentTarget.style.transform = 'scale(1)'}
-          >
-            <div style={{ 
-              padding: '1rem', borderRadius: '50%', 
-              border: `2px solid ${userVote === 'dislike' ? 'var(--danger)' : 'var(--card-border)'}`,
-              background: userVote === 'dislike' ? 'rgba(239, 68, 68, 0.15)' : 'transparent'
-            }}>
+          <button onClick={handleDislike} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '0.5rem', background: 'none', border: 'none', color: 'var(--text-muted)', cursor: 'pointer', transition: 'transform 0.2s' }} onMouseEnter={e => e.currentTarget.style.transform = 'scale(1.1)'} onMouseLeave={e => e.currentTarget.style.transform = 'scale(1)'}>
+            <div style={{ padding: '1rem', borderRadius: '50%', border: '2px solid var(--text-muted)' }}>
               <ThumbsDown size={24} />
             </div>
             <span style={{ fontWeight: 'bold', fontSize: '1.1rem' }}>{post.dislikes || 0}</span>

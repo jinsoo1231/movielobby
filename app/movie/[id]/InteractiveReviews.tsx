@@ -11,6 +11,38 @@ export default function InteractiveReviews({ initialReviews, movieId }: { initia
   const [text, setText] = useState("");
   const [nickname, setNickname] = useState("");
 
+  const [currentUser, setCurrentUser] = useState<any>(null);
+  const [userVotes, setUserVotes] = useState<Record<string, 'like' | 'dislike'>>({});
+
+  useEffect(() => {
+    // 현재 로그인된 유저 및 기존 투표 이력 조회
+    async function checkAuthAndVotes() {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (user) {
+        setCurrentUser(user);
+        if (user.user_metadata?.nickname) {
+          setNickname(user.user_metadata.nickname);
+        }
+
+        // 로그인 유저의 리뷰 투표 기록 조회
+        const { data: votes } = await supabase
+          .from('vote_logs')
+          .select('target_id, vote_type')
+          .eq('user_id', user.id)
+          .eq('target_type', 'review');
+
+        if (votes) {
+          const voteMap: Record<string, 'like' | 'dislike'> = {};
+          votes.forEach((v: any) => {
+            voteMap[v.target_id] = v.vote_type;
+          });
+          setUserVotes(voteMap);
+        }
+      }
+    }
+    checkAuthAndVotes();
+  }, []);
+
   useEffect(() => {
     async function fetchReviews() {
       // Supabase에서 해당 영화의 리뷰 목록을 조회합니다.
@@ -100,9 +132,47 @@ export default function InteractiveReviews({ initialReviews, movieId }: { initia
     setHoverRating(0);
   };
 
+  // 사용자 1인 1회 추천/비추천 투표 처리 함수
   const handleVote = async (reviewId: any, type: 'like' | 'dislike') => {
     const review = reviews.find(r => r.id === reviewId);
     if (!review || !review.isLocal) return; // Supabase 저장된 리뷰만 업데이트 (isLocal = true)
+
+    // 1. 로그인 여부 확인 (미로그인 시 투표 차단)
+    if (!currentUser) {
+      alert("추천/비추천은 로그인 후 이용하실 수 있습니다.");
+      return;
+    }
+
+    const targetIdStr = String(reviewId);
+
+    // 2. 이미 투표한 이력이 있는지 확인
+    if (userVotes[targetIdStr]) {
+      alert("이미 참여하신 리뷰입니다. (1인 1회만 참여 가능)");
+      return;
+    }
+
+    // 3. vote_logs 테이블에 중복 방지 기록 저장 시도
+    const { error: logError } = await supabase
+      .from('vote_logs')
+      .insert([{
+        user_id: currentUser.id,
+        target_type: 'review',
+        target_id: targetIdStr,
+        vote_type: type
+      }]);
+
+    if (logError) {
+      if (logError.code === '23505') { // Postgres 고유키 위반 에러 (중복 방지)
+        alert("이미 참여하신 리뷰입니다.");
+      } else {
+        console.error("Vote logging error:", logError);
+        alert("추천/비추천 처리에 실패했습니다. (DB 설정을 확인해주세요)");
+      }
+      return;
+    }
+
+    // 4. 로컬 상태 및 DB 카운트 업데이트
+    setUserVotes(prev => ({ ...prev, [targetIdStr]: type }));
 
     const newLikes = type === 'like' ? (review.likes || 0) + 1 : (review.likes || 0);
     const newDislikes = type === 'dislike' ? (review.dislikes || 0) + 1 : (review.dislikes || 0);
@@ -317,13 +387,16 @@ export default function InteractiveReviews({ initialReviews, movieId }: { initia
                     onClick={() => handleVote(review.id, 'like')}
                     style={{ 
                       display: 'flex', alignItems: 'center', gap: '0.4rem', 
-                      background: 'transparent', border: '1px solid var(--card-border)', 
+                      background: userVotes[String(review.id)] === 'like' ? 'rgba(236, 72, 153, 0.1)' : 'transparent', 
+                      border: userVotes[String(review.id)] === 'like' ? '1px solid var(--accent-pink)' : '1px solid var(--card-border)', 
                       borderRadius: '20px', padding: '4px 12px', 
-                      color: 'var(--text-muted)', cursor: 'pointer', fontSize: '0.85rem',
+                      color: userVotes[String(review.id)] === 'like' ? 'var(--accent-pink)' : 'var(--text-muted)', 
+                      cursor: 'pointer', fontSize: '0.85rem',
+                      fontWeight: userVotes[String(review.id)] === 'like' ? 'bold' : 'normal',
                       transition: 'all 0.2s'
                     }}
-                    onMouseEnter={(e) => e.currentTarget.style.color = 'var(--accent-pink)'}
-                    onMouseLeave={(e) => e.currentTarget.style.color = 'var(--text-muted)'}
+                    onMouseEnter={(e) => { if (userVotes[String(review.id)] !== 'like') e.currentTarget.style.color = 'var(--accent-pink)'; }}
+                    onMouseLeave={(e) => { if (userVotes[String(review.id)] !== 'like') e.currentTarget.style.color = 'var(--text-muted)'; }}
                   >
                     <ThumbsUp size={14} /> {review.likes || 0}
                   </button>
@@ -331,13 +404,16 @@ export default function InteractiveReviews({ initialReviews, movieId }: { initia
                     onClick={() => handleVote(review.id, 'dislike')}
                     style={{ 
                       display: 'flex', alignItems: 'center', gap: '0.4rem', 
-                      background: 'transparent', border: '1px solid var(--card-border)', 
+                      background: userVotes[String(review.id)] === 'dislike' ? 'rgba(239, 68, 68, 0.1)' : 'transparent', 
+                      border: userVotes[String(review.id)] === 'dislike' ? '1px solid var(--danger)' : '1px solid var(--card-border)', 
                       borderRadius: '20px', padding: '4px 12px', 
-                      color: 'var(--text-muted)', cursor: 'pointer', fontSize: '0.85rem',
+                      color: userVotes[String(review.id)] === 'dislike' ? 'var(--danger)' : 'var(--text-muted)', 
+                      cursor: 'pointer', fontSize: '0.85rem',
+                      fontWeight: userVotes[String(review.id)] === 'dislike' ? 'bold' : 'normal',
                       transition: 'all 0.2s'
                     }}
-                    onMouseEnter={(e) => e.currentTarget.style.color = 'var(--danger)'}
-                    onMouseLeave={(e) => e.currentTarget.style.color = 'var(--text-muted)'}
+                    onMouseEnter={(e) => { if (userVotes[String(review.id)] !== 'dislike') e.currentTarget.style.color = 'var(--danger)'; }}
+                    onMouseLeave={(e) => { if (userVotes[String(review.id)] !== 'dislike') e.currentTarget.style.color = 'var(--text-muted)'; }}
                   >
                     <ThumbsDown size={14} /> {review.dislikes || 0}
                   </button>
