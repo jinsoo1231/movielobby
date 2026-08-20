@@ -2,7 +2,9 @@ import type { Metadata } from "next";
 import { Inter, Outfit } from "next/font/google";
 import "./globals.css";
 import Link from "next/link";
-import { Film, Search } from "lucide-react";
+import { Film } from "lucide-react";
+import SearchForm from "./SearchForm";
+import HeaderAuth from "./HeaderAuth";
 
 const inter = Inter({ subsets: ["latin"], variable: "--font-inter" });
 const outfit = Outfit({ subsets: ["latin"], variable: "--font-outfit" });
@@ -20,21 +22,21 @@ export default function RootLayout({
   return (
     <html lang="ko">
       <body className={`${inter.variable} ${outfit.variable}`}>
-        <header className="header" style={{ background: 'var(--primary)', color: '#fff' }}>
+        <header className="header" style={{ backgroundColor: '#032541', color: '#fff' }}>
           <div className="container" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', height: '64px' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '2rem' }}>
               <Link href="/" className="logo" style={{ color: '#fff', display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '1.5rem', fontWeight: 'bold' }}>
-                <Film size={28} color="#fff" />
+                <img src="/images/app_icon.jfif" alt="MovieLobby" style={{ width: '36px', height: '36px', borderRadius: '8px', objectFit: 'cover' }} />
                 MovieLobby
               </Link>
               <nav style={{ display: 'flex', gap: '1.5rem', fontSize: '1rem', fontWeight: 600 }}>
                 <Link href="/movies" style={{ color: '#fff' }}>Movies</Link>
+                <Link href="/talks" style={{ color: '#fff' }}>Talks</Link>
               </nav>
             </div>
             <div style={{ display: 'flex', alignItems: 'center', gap: '1.5rem' }}>
-              <Link href="/search" style={{ color: '#01b4e4' }}>
-                <Search size={22} strokeWidth={2.5} />
-              </Link>
+              <SearchForm />
+              <HeaderAuth />
             </div>
           </div>
         </header>

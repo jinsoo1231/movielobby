@@ -26,7 +26,7 @@ export default function RootLayout({
           <div className="container" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', height: '64px' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '2rem' }}>
               <Link href="/" className="logo" style={{ color: '#fff', display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '1.5rem', fontWeight: 'bold' }}>
-                <Film size={28} color="#fff" />
+                <img src="/images/icon_logo.PNG" alt="MovieLobby" style={{ width: '36px', height: '36px', borderRadius: '8px', objectFit: 'cover' }} />
                 MovieLobby
               </Link>
               <nav style={{ display: 'flex', gap: '1.5rem', fontSize: '1rem', fontWeight: 600 }}>

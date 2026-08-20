@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { TrendingUp, Youtube, Search, Compass, Star } from "lucide-react";
 import YearSelector from "../YearSelector";
+import { createClient } from "@/lib/supabase/server";
 
 // Server-side data fetching
 async function getMoviesData(page: number = 1, year: number) {
@@ -29,8 +30,37 @@ async function getMoviesData(page: number = 1, year: number) {
     const playingData = await playingRes.json();
 
     const nowPlayingIds = new Set((playingData.results || []).map((m: any) => m.id));
+    const trendingList = discoverData.results || [];
+
+    // Fetch average ratings from Supabase
+    let reviewRatings: Record<number, number> = {};
+    if (trendingList.length > 0) {
+      try {
+        const supabase = createClient();
+        const movieIds = trendingList.map((m: any) => m.id);
+        const { data: reviewsData } = await supabase
+          .from('reviews')
+          .select('movie_id, rating')
+          .in('movie_id', movieIds);
+
+        if (reviewsData) {
+           const sumMap: Record<number, {sum: number, count: number}> = {};
+           reviewsData.forEach((r: any) => {
+              if (!sumMap[r.movie_id]) sumMap[r.movie_id] = { sum: 0, count: 0 };
+              sumMap[r.movie_id].sum += r.rating;
+              sumMap[r.movie_id].count += 1;
+           });
+           for (const [id, val] of Object.entries(sumMap)) {
+              reviewRatings[Number(id)] = val.sum / val.count;
+           }
+        }
+      } catch (e) {
+        console.error("Failed to fetch review ratings", e);
+      }
+    }
+
     return { 
-      trending: discoverData.results || [],
+      trending: trendingList.map((m: any) => ({ ...m, mlRating: reviewRatings[m.id] || 0 })),
       nowPlayingIds,
       totalPages: Math.min(discoverData.total_pages || 1, 500) // TMDB API max page is usually 500
     };
@@ -118,8 +148,12 @@ export default async function Home({
 
                   <div className="info-overlay">
                     <div className="movie-title">{movie.title}</div>
+                    <div className="movie-meta" style={{ marginBottom: '4px' }}>
+                      <img src="/images/icon_logo.PNG" alt="MovieLobby" style={{ width: '14px', height: '14px', borderRadius: '2px', objectFit: 'cover' }} />
+                      {movie.mlRating ? movie.mlRating.toFixed(1) : "0.0"}
+                    </div>
                     <div className="movie-meta">
-                      <Star size={14} fill="var(--accent-pink)" color="var(--accent-pink)" />
+                      <Star size={14} fill="#ef4444" color="#ef4444" />
                       {movie.vote_average ? movie.vote_average.toFixed(1) : "0.0"}
                     </div>
                   </div>
