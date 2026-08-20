@@ -33,4 +33,5 @@
 제6조 (히스토리 관리 및 문서 최신화의 원칙)
 
 1. 모든 Update 사항은 시간순으로 Update history 문서(docs/update_history.md)를 docs 폴더에 만들어 해당 문서에 업데이트 내용을 정리한다 (적용한 시간, 일시, 년도 기입).
+   - 단, 업데이트 내역을 작성할 때는 기능의 영향을 받는 플랫폼에 따라 제목 앞에 반드시 **`[Web]`**, **`[Mobile]`**, **`[Common]`** 중 하나의 태그를 명시하여 통합 관리의 가독성을 높인다.
 2. MovieLobby에 기능이 추가되면 docs 폴더 안의 Project Overview 문서(docs/project_overview.md)에도 내용을 함께 업데이트한다.
