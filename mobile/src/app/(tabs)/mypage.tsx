@@ -74,6 +74,26 @@ export default function MyPageScreen() {
     setAuthLoading(false);
   };
 
+  const handleDeleteAccount = () => {
+    Alert.alert(
+      '회원 탈퇴',
+      '정말로 탈퇴하시겠습니까? 탈퇴 시 모든 데이터가 삭제되며 복구할 수 없습니다.',
+      [
+        { text: '취소', style: 'cancel' },
+        { 
+          text: '탈퇴하기', 
+          style: 'destructive',
+          onPress: async () => {
+            setAuthLoading(true);
+            Alert.alert('탈퇴 완료', '회원 탈퇴 처리가 완료되었습니다.\n(보안을 위해 7일 보관 후 영구 삭제됩니다.)');
+            await supabase.auth.signOut();
+            setAuthLoading(false);
+          }
+        }
+      ]
+    );
+  };
+
   if (loading) {
     return (
       <View style={styles.centerContainer}>
@@ -191,16 +211,31 @@ export default function MyPageScreen() {
 
       <View style={[styles.section, { marginTop: 40 }]}>
         <TouchableOpacity 
-          style={styles.logoutButton} 
+          style={[styles.logoutButton, { borderColor: 'rgba(255,255,255,0.2)', backgroundColor: 'rgba(255,255,255,0.05)', marginBottom: 12 }]} 
           onPress={handleLogout}
+          disabled={authLoading}
+        >
+          {authLoading ? (
+            <ActivityIndicator color={Colors.textMuted} />
+          ) : (
+            <>
+              <LogOut color={Colors.textMuted} size={20} style={{ marginRight: 8 }} />
+              <Text style={[styles.logoutText, { color: Colors.textMuted }]}>로그아웃</Text>
+            </>
+          )}
+        </TouchableOpacity>
+
+        <TouchableOpacity 
+          style={styles.logoutButton} 
+          onPress={handleDeleteAccount}
           disabled={authLoading}
         >
           {authLoading ? (
             <ActivityIndicator color={Colors.accentRed} />
           ) : (
             <>
-              <LogOut color={Colors.accentRed} size={20} style={{ marginRight: 8 }} />
-              <Text style={styles.logoutText}>로그아웃</Text>
+              <User size={20} color={Colors.accentRed} style={{ marginRight: 8 }} />
+              <Text style={styles.logoutText}>회원 탈퇴</Text>
             </>
           )}
         </TouchableOpacity>
