@@ -1,4 +1,4 @@
-import { View, Text, StyleSheet, TextInput, TouchableOpacity, ActivityIndicator, Alert, ScrollView } from 'react-native';
+import { View, Text, StyleSheet, TextInput, TouchableOpacity, ActivityIndicator, Alert, ScrollView, Linking } from 'react-native';
 import { useState } from 'react';
 import { useAuth } from '@/context/AuthContext';
 import { supabase } from '@/lib/supabase';
@@ -180,6 +180,10 @@ export default function MyPageScreen() {
                 <Text style={styles.toggleText}>이미 계정이 있으신가요? <Text style={styles.toggleTextBold}>로그인</Text></Text>
               </TouchableOpacity>
             )}
+            
+            <TouchableOpacity onPress={() => Linking.openURL('https://movielobby.vercel.app/privacy')} style={{ marginTop: 24, padding: 8 }}>
+              <Text style={{ color: Colors.textMuted, fontSize: 13, textDecorationLine: 'underline' }}>개인정보처리방침</Text>
+            </TouchableOpacity>
           </View>
         </View>
       </View>
@@ -206,6 +210,13 @@ export default function MyPageScreen() {
         </TouchableOpacity>
         <TouchableOpacity style={styles.menuItem} onPress={() => Alert.alert('알림', '준비 중입니다.')}>
           <Text style={styles.menuText}>내가 남긴 한줄평</Text>
+        </TouchableOpacity>
+      </View>
+
+      <View style={[styles.section, { marginTop: 16 }]}>
+        <Text style={styles.sectionTitle}>정보</Text>
+        <TouchableOpacity style={styles.menuItem} onPress={() => Linking.openURL('https://movielobby.vercel.app/privacy')}>
+          <Text style={styles.menuText}>개인정보처리방침</Text>
         </TouchableOpacity>
       </View>
 

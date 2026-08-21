@@ -44,7 +44,10 @@ export default function RootLayout({
         <footer style={{ borderTop: '1px solid var(--card-border)', padding: '3rem 0', marginTop: '4rem', color: 'var(--text-muted)', fontSize: '0.9rem' }}>
           <div className="container" style={{ textAlign: 'center' }}>
             <p>&copy; 2026 Movie Lobby. All rights reserved.</p>
-            <p style={{ marginTop: '0.5rem', opacity: 0.7 }}>Powered by Next.js & Vercel</p>
+            <div style={{ marginTop: '1rem', display: 'flex', justifyContent: 'center', gap: '1.5rem' }}>
+              <Link href="/privacy" style={{ color: 'var(--text-muted)', textDecoration: 'none' }}>개인정보처리방침</Link>
+            </div>
+            <p style={{ marginTop: '1rem', opacity: 0.7 }}>Powered by Next.js & Vercel</p>
           </div>
         </footer>
       </body>
