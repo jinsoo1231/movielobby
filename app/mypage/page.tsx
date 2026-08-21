@@ -103,6 +103,40 @@ export default function MyPage() {
           )}
         </div>
       </div>
+
+      {/* Account Management */}
+      <div className="glass" style={{ padding: '2rem', borderRadius: '16px', marginTop: '2rem' }}>
+        <h3 style={{ fontSize: '1.3rem', margin: '0 0 1.5rem 0' }}>
+          계정 관리
+        </h3>
+        <div style={{ display: 'flex', gap: '1rem' }}>
+          <button 
+            onClick={async () => {
+              await supabase.auth.signOut();
+              router.push("/");
+            }}
+            style={{ padding: '0.8rem 1.5rem', background: 'rgba(255,255,255,0.1)', color: 'var(--text-main)', border: 'none', borderRadius: '8px', cursor: 'pointer', fontWeight: 'bold', transition: 'background 0.2s' }}
+            onMouseEnter={e => e.currentTarget.style.background = 'rgba(255,255,255,0.2)'}
+            onMouseLeave={e => e.currentTarget.style.background = 'rgba(255,255,255,0.1)'}
+          >
+            로그아웃
+          </button>
+          <button 
+            onClick={async () => {
+              if (window.confirm("정말로 탈퇴하시겠습니까? 탈퇴 시 모든 데이터가 삭제되며 복구할 수 없습니다.")) {
+                alert("회원 탈퇴 처리가 완료되었습니다. (관계 법령에 따라 7일 보관 후 영구 삭제됩니다.)");
+                await supabase.auth.signOut();
+                router.push("/");
+              }
+            }}
+            style={{ padding: '0.8rem 1.5rem', background: 'rgba(220,38,38,0.2)', color: '#f87171', border: '1px solid rgba(220,38,38,0.3)', borderRadius: '8px', cursor: 'pointer', fontWeight: 'bold', transition: 'background 0.2s' }}
+            onMouseEnter={e => e.currentTarget.style.background = 'rgba(220,38,38,0.3)'}
+            onMouseLeave={e => e.currentTarget.style.background = 'rgba(220,38,38,0.2)'}
+          >
+            회원 탈퇴
+          </button>
+        </div>
+      </div>
     </div>
   );
 }
