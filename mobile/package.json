@@ -44,6 +44,7 @@
   "scripts": {
     "start": "expo start",
     "tunnel": "npx kill-port 8081 4040 && expo start --tunnel",
+    "usb": "npx kill-port 8081 && adb reverse tcp:8081 tcp:8081 && adb reverse tcp:3000 tcp:3000 && set HOST=127.0.0.1&& expo start --localhost -c",
     "reset-project": "node ./scripts/reset-project.js",
     "android": "expo start --android",
     "ios": "expo start --ios",

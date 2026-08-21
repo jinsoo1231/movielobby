@@ -110,8 +110,8 @@ export default function TalksScreen() {
             </View>
             <View style={styles.postTitleRow}>
               {post.is_spoiler && (
-                <View style={styles.spoilerBadge}>
-                  <Text style={styles.spoilerText}>스포일러</Text>
+                <View style={[styles.spoilerBadge, { borderColor: Colors.light.danger }]}>
+                  <Text style={[styles.spoilerText, { color: Colors.light.danger }]}>스포일러</Text>
                 </View>
               )}
               <Text style={styles.postTitle} numberOfLines={1}>
@@ -240,10 +240,10 @@ const styles = StyleSheet.create({
     borderRadius: 4,
     marginRight: 8,
     borderWidth: 1,
-    borderColor: Colors.accentRed,
+    borderColor: Colors.light.danger,
   },
   spoilerText: {
-    color: Colors.accentRed,
+    color: Colors.light.danger,
     fontSize: 10,
     fontWeight: 'bold',
   },

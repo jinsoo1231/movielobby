@@ -247,7 +247,7 @@ const styles = StyleSheet.create({
     height: '100%',
   },
   backdropOverlay: {
-    ...StyleSheet.absoluteFillObject,
+    ...(StyleSheet.absoluteFill as any),
     backgroundColor: 'rgba(25, 25, 30, 0.7)',
   },
   movieInfo: {
