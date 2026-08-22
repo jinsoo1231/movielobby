@@ -1,6 +1,6 @@
 import { Tabs } from 'expo-router';
 import { Colors } from '@/constants/theme';
-import { Home, Search, MessageSquare, User } from 'lucide-react-native';
+import { Home, Search, MessageSquare, User, MapPin } from 'lucide-react-native';
 import { AuthProvider } from '@/context/AuthContext';
 
 export default function TabLayout() {
@@ -32,6 +32,14 @@ export default function TabLayout() {
           title: '검색',
           tabBarLabel: 'Search',
           tabBarIcon: ({ color }) => <Search size={24} color={color} />,
+        }}
+      />
+      <Tabs.Screen
+        name="map"
+        options={{
+          title: '내 주변 상영관',
+          tabBarLabel: 'Map',
+          tabBarIcon: ({ color }) => <MapPin size={24} color={color} />,
         }}
       />
       <Tabs.Screen

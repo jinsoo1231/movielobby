@@ -1,15 +1,20 @@
-import { View, Text, StyleSheet, ScrollView, Image, TouchableOpacity, ActivityIndicator, FlatList, Alert } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, Image, TouchableOpacity, ActivityIndicator, FlatList, Alert, TextInput } from 'react-native';
 import { useEffect, useState } from 'react';
 import { MessageSquare, Flame, Eye, ThumbsUp } from 'lucide-react-native';
 import { Colors } from '@/constants/theme';
 import { fetchTrendingMovies } from '@/lib/tmdb';
 import { supabase } from '@/lib/supabase';
-import { Link } from 'expo-router';
+import { Link, useRouter } from 'expo-router';
+import { Search } from 'lucide-react-native';
 
 export default function TalksScreen() {
+  const router = useRouter();
   const [hotMovies, setHotMovies] = useState<any[]>([]);
   const [recentPosts, setRecentPosts] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [searchResults, setSearchResults] = useState<any[]>([]);
+  const [isSearching, setIsSearching] = useState(false);
 
   // [제1조 2항 준수] 커뮤니티 데이터 동시 로딩 로직
   // 앱 화면이 처음 켜질 때, TMDB API(영화 포스터)와 Supabase DB(최신글)를 동시에 병렬로 가져옵니다.
@@ -51,8 +56,26 @@ export default function TalksScreen() {
     return `${date.getFullYear()}.${String(date.getMonth() + 1).padStart(2, '0')}.${String(date.getDate()).padStart(2, '0')}`;
   };
 
-  const handlePostPress = () => {
-    Alert.alert("알림", "게시글 상세 보기 화면은 준비 중입니다. (웹 연동 중)");
+  const handlePostPress = (post: any) => {
+    router.push(`/talk-detail/${post.movie_id}/${post.id}` as any);
+  };
+
+  const handleSearch = async () => {
+    if (!searchQuery.trim()) return;
+    setIsSearching(true);
+    try {
+      const res = await fetch(`https://api.themoviedb.org/3/search/movie?query=${encodeURIComponent(searchQuery)}&language=ko-KR`, {
+        headers: { Authorization: `Bearer ${process.env.EXPO_PUBLIC_TMDB_TOKEN}` }
+      });
+      const data = await res.json();
+      if (data.results) {
+        setSearchResults(data.results.slice(0, 5));
+      }
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setIsSearching(false);
+    }
   };
 
   if (loading) {
@@ -71,6 +94,43 @@ export default function TalksScreen() {
         <MessageSquare size={40} color="#fff" style={{ marginBottom: 12 }} />
         <Text style={styles.heroTitle}>Movie Talks</Text>
         <Text style={styles.heroSubtitle}>세상의 모든 영화에 대해 자유롭게 이야기하세요.</Text>
+        
+        <View style={styles.searchContainer}>
+          <Search size={20} color={Colors.textMuted} style={styles.searchIcon} />
+          <TextInput
+            style={styles.searchInput}
+            placeholder="어떤 영화의 이야기가 궁금하신가요?"
+            placeholderTextColor={Colors.textMuted}
+            value={searchQuery}
+            onChangeText={(text) => {
+              setSearchQuery(text);
+              if (text === '') setSearchResults([]);
+            }}
+            onSubmitEditing={handleSearch}
+            returnKeyType="search"
+          />
+        </View>
+
+        {isSearching && <ActivityIndicator size="small" color={Colors.accentBlue} style={{ marginTop: 10 }} />}
+        
+        {searchResults.length > 0 && (
+          <View style={styles.searchResults}>
+            {searchResults.map(movie => (
+              <Link key={movie.id} href={`/talk-board/${movie.id}` as any} asChild>
+                <TouchableOpacity style={styles.searchResultItem}>
+                  <Image 
+                    source={{ uri: movie.poster_path ? `https://image.tmdb.org/t/p/w92${movie.poster_path}` : 'https://via.placeholder.com/92x138/19191E/FFFFFF?text=No+Poster' }} 
+                    style={styles.searchResultThumb} 
+                  />
+                  <View>
+                    <Text style={styles.searchResultTitle}>{movie.title}</Text>
+                    <Text style={styles.searchResultYear}>{movie.release_date?.substring(0,4)}</Text>
+                  </View>
+                </TouchableOpacity>
+              </Link>
+            ))}
+          </View>
+        )}
       </View>
 
       {/* 2. Hot Movies (Horizontal Scroll) */}
@@ -86,7 +146,7 @@ export default function TalksScreen() {
           showsHorizontalScrollIndicator={false}
           contentContainerStyle={styles.hotMoviesList}
           renderItem={({ item }) => (
-            <Link href={`/movie/${item.id}` as any} asChild>
+            <Link href={`/talk-board/${item.id}` as any} asChild>
               <TouchableOpacity style={styles.hotMovieCard} activeOpacity={0.8}>
                 <Image 
                   source={{ uri: item.poster_path ? `https://image.tmdb.org/t/p/w200${item.poster_path}` : 'https://via.placeholder.com/200x300/19191E/FFFFFF?text=No+Poster' }} 
@@ -103,7 +163,7 @@ export default function TalksScreen() {
       <View style={styles.section}>
         <Text style={styles.sectionTitle}>최신 커뮤니티 글</Text>
         {recentPosts.map((post) => (
-          <TouchableOpacity key={post.id} style={styles.postCard} onPress={handlePostPress} activeOpacity={0.7}>
+          <TouchableOpacity key={post.id} style={styles.postCard} onPress={() => handlePostPress(post)} activeOpacity={0.7}>
             <View style={styles.postHeader}>
               <Text style={styles.postMovieTitle} numberOfLines={1}>{post.movie_title}</Text>
               <Text style={styles.postDate}>{formatDate(post.created_at)}</Text>
@@ -167,6 +227,58 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: 'rgba(255,255,255,0.8)',
     textAlign: 'center',
+    marginBottom: 20,
+  },
+  searchContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: 'rgba(255,255,255,0.1)',
+    borderRadius: 8,
+    paddingHorizontal: 12,
+    borderWidth: 1,
+    borderColor: Colors.darkCardBorder,
+    width: '100%',
+  },
+  searchIcon: {
+    marginRight: 8,
+  },
+  searchInput: {
+    flex: 1,
+    color: '#fff',
+    paddingVertical: 12,
+    fontSize: 15,
+  },
+  searchResults: {
+    marginTop: 12,
+    backgroundColor: Colors.darkCardBg,
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: Colors.darkCardBorder,
+    overflow: 'hidden',
+    width: '100%',
+  },
+  searchResultItem: {
+    flexDirection: 'row',
+    padding: 12,
+    alignItems: 'center',
+    borderBottomWidth: 1,
+    borderBottomColor: Colors.darkCardBorder,
+  },
+  searchResultThumb: {
+    width: 40,
+    height: 60,
+    borderRadius: 4,
+    marginRight: 12,
+  },
+  searchResultTitle: {
+    color: '#fff',
+    fontWeight: 'bold',
+    fontSize: 15,
+    marginBottom: 4,
+  },
+  searchResultYear: {
+    color: Colors.textMuted,
+    fontSize: 13,
   },
   section: {
     paddingTop: 24,

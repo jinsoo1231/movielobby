@@ -4,9 +4,10 @@ import { MessageSquare, Flame, Eye, ThumbsUp } from 'lucide-react-native';
 import { Colors } from '@/constants/theme';
 import { fetchTrendingMovies } from '@/lib/tmdb';
 import { supabase } from '@/lib/supabase';
-import { Link } from 'expo-router';
+import { Link, useRouter } from 'expo-router';
 
 export default function TalksScreen() {
+  const router = useRouter();
   const [hotMovies, setHotMovies] = useState<any[]>([]);
   const [recentPosts, setRecentPosts] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
@@ -51,8 +52,8 @@ export default function TalksScreen() {
     return `${date.getFullYear()}.${String(date.getMonth() + 1).padStart(2, '0')}.${String(date.getDate()).padStart(2, '0')}`;
   };
 
-  const handlePostPress = () => {
-    Alert.alert("알림", "게시글 상세 보기 화면은 준비 중입니다. (웹 연동 중)");
+  const handlePostPress = (post: any) => {
+    router.push(`/talk-detail/${post.movie_id}/${post.id}` as any);
   };
 
   if (loading) {
@@ -103,7 +104,7 @@ export default function TalksScreen() {
       <View style={styles.section}>
         <Text style={styles.sectionTitle}>최신 커뮤니티 글</Text>
         {recentPosts.map((post) => (
-          <TouchableOpacity key={post.id} style={styles.postCard} onPress={handlePostPress} activeOpacity={0.7}>
+          <TouchableOpacity key={post.id} style={styles.postCard} onPress={() => handlePostPress(post)} activeOpacity={0.7}>
             <View style={styles.postHeader}>
               <Text style={styles.postMovieTitle} numberOfLines={1}>{post.movie_title}</Text>
               <Text style={styles.postDate}>{formatDate(post.created_at)}</Text>

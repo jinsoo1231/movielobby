@@ -74,3 +74,18 @@ export const searchMovies = async (query: string, page = 1) => {
     return null;
   }
 };
+
+export const fetchCollectionDetails = async (collectionId: number) => {
+  try {
+    const response = await fetch(`${BASE_URL}/collection/${collectionId}?language=ko-KR`, {
+      headers: {
+        accept: 'application/json',
+        Authorization: `Bearer ${TMDB_TOKEN}`,
+      },
+    });
+    return await response.json();
+  } catch (error) {
+    console.error('Error fetching collection details:', error);
+    return null;
+  }
+};

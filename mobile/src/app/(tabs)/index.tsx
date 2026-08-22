@@ -1,4 +1,4 @@
-import { View, Text, StyleSheet, FlatList, Image, ActivityIndicator, TouchableOpacity } from 'react-native';
+import { View, Text, StyleSheet, FlatList, Image, ActivityIndicator, TouchableOpacity, ScrollView } from 'react-native';
 import { Colors } from '@/constants/theme';
 import { useEffect, useState } from 'react';
 import { fetchTrendingMovies, fetchNowPlayingMovies, GENRE_MAP } from '@/lib/tmdb';
@@ -6,19 +6,37 @@ import { supabase } from '@/lib/supabase';
 import { Star } from 'lucide-react-native';
 import { Link } from 'expo-router';
 
+const CURRENT_YEAR = new Date().getFullYear();
+const YEARS = Array.from({ length: CURRENT_YEAR - 1949 }, (_, i) => CURRENT_YEAR - i);
+
 export default function HomeScreen() {
   const [movies, setMovies] = useState<any[]>([]);
   const [nowPlayingIds, setNowPlayingIds] = useState<Set<number>>(new Set());
   const [loading, setLoading] = useState(true);
+  
+  const [selectedYear, setSelectedYear] = useState<number>(2026);
+  const [page, setPage] = useState<number>(1);
+  const [hasMore, setHasMore] = useState<boolean>(true);
+  const [isFetchingMore, setIsFetchingMore] = useState<boolean>(false);
 
-  const loadMovies = async () => {
+  const loadMovies = async (pageNum: number, year: number, append = false) => {
+    if (pageNum === 1) setLoading(true);
+    else setIsFetchingMore(true);
+
     try {
       const [tmdbData, playingData] = await Promise.all([
-        fetchTrendingMovies(1),
-        fetchNowPlayingMovies(),
+        fetchTrendingMovies(pageNum, year),
+        pageNum === 1 ? fetchNowPlayingMovies() : Promise.resolve(null),
       ]);
       
-      if (!tmdbData || !tmdbData.results) return;
+      if (!tmdbData || !tmdbData.results) {
+        setHasMore(false);
+        return;
+      }
+
+      if (tmdbData.results.length === 0) {
+        setHasMore(false);
+      }
 
       if (playingData && playingData.results) {
         setNowPlayingIds(new Set(playingData.results.map((m: any) => m.id)));
@@ -51,17 +69,28 @@ export default function HomeScreen() {
         };
       });
 
-      setMovies(moviesWithRatings);
+      setMovies(prev => append ? [...prev, ...moviesWithRatings] : moviesWithRatings);
     } catch (err) {
       console.error(err);
     } finally {
       setLoading(false);
+      setIsFetchingMore(false);
     }
   };
 
   useEffect(() => {
-    loadMovies();
-  }, []);
+    setPage(1);
+    setHasMore(true);
+    loadMovies(1, selectedYear, false);
+  }, [selectedYear]);
+
+  const handleLoadMore = () => {
+    if (!loading && !isFetchingMore && hasMore) {
+      const nextPage = page + 1;
+      setPage(nextPage);
+      loadMovies(nextPage, selectedYear, true);
+    }
+  };
 
   const renderMovie = ({ item, index }: { item: any; index: number }) => {
     const isPlaying = nowPlayingIds.has(item.id);
@@ -112,22 +141,59 @@ export default function HomeScreen() {
     );
   };
 
-  if (loading) {
+  const renderHeader = () => (
+    <View style={styles.headerContainer}>
+      <Text style={styles.headerTitle}>Discover Movies</Text>
+      <ScrollView 
+        horizontal 
+        showsHorizontalScrollIndicator={false} 
+        style={styles.yearScroll} 
+        contentContainerStyle={styles.yearScrollContent}
+      >
+        {YEARS.map(y => (
+          <TouchableOpacity 
+            key={y} 
+            style={[styles.yearChip, selectedYear === y && styles.yearChipActive]}
+            onPress={() => setSelectedYear(y)}
+          >
+            <Text style={[styles.yearText, selectedYear === y && styles.yearTextActive]}>{y}</Text>
+          </TouchableOpacity>
+        ))}
+      </ScrollView>
+    </View>
+  );
+
+  const renderFooter = () => {
+    if (!isFetchingMore) return <View style={{ height: 40 }} />;
     return (
-      <View style={styles.center}>
-        <ActivityIndicator size="large" color={Colors.accentBlue} />
+      <View style={styles.footerLoader}>
+        <ActivityIndicator size="small" color={Colors.accentBlue} />
+      </View>
+    );
+  };
+
+  if (loading && page === 1) {
+    return (
+      <View style={styles.container}>
+        {renderHeader()}
+        <View style={styles.center}>
+          <ActivityIndicator size="large" color={Colors.accentBlue} />
+        </View>
       </View>
     );
   }
 
   return (
     <View style={styles.container}>
-      <Text style={styles.headerTitle}>Trending Movies</Text>
       <FlatList 
         data={movies}
-        keyExtractor={(item) => item.id.toString()}
+        keyExtractor={(item, index) => `${item.id}-${index}`}
         renderItem={renderMovie}
         contentContainerStyle={styles.listContent}
+        ListHeaderComponent={renderHeader}
+        ListFooterComponent={renderFooter}
+        onEndReached={handleLoadMore}
+        onEndReachedThreshold={0.5}
       />
     </View>
   );
@@ -144,12 +210,47 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
   },
+  headerContainer: {
+    paddingHorizontal: 16,
+    paddingTop: 16,
+    paddingBottom: 8,
+  },
   headerTitle: {
     color: '#fff',
     fontSize: 24,
     fontWeight: 'bold',
-    margin: 16,
-    marginTop: 20,
+    marginBottom: 12,
+  },
+  yearScroll: {
+    flexGrow: 0,
+  },
+  yearScrollContent: {
+    paddingRight: 16,
+    gap: 8,
+  },
+  yearChip: {
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+    borderRadius: 20,
+    backgroundColor: Colors.darkCardBg,
+    borderWidth: 1,
+    borderColor: Colors.darkCardBorder,
+  },
+  yearChipActive: {
+    backgroundColor: Colors.accentBlue,
+    borderColor: Colors.accentBlue,
+  },
+  yearText: {
+    color: Colors.textMuted,
+    fontSize: 14,
+    fontWeight: '600',
+  },
+  yearTextActive: {
+    color: '#fff',
+  },
+  footerLoader: {
+    paddingVertical: 24,
+    alignItems: 'center',
   },
   listContent: {
     paddingHorizontal: 16,
